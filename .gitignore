@@ -37,3 +37,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Config local do Claude Code (nao pertence ao repositorio)
+.claude/
