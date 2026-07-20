@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun pm *)",
+      "Bash(bun install *)",
+      "Bash(bun run *)",
+      "Skill(update-config)",
+      "Bash(netstat -ano)",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('.claude/settings.local.json','utf8'\\)\\); console.log\\('JSON valido'\\)\")",
+      "Bash(taskkill //PID 23480 //F)",
+      "Bash(node __TRACKED_VAR__/../scratchpad/create-test-user.mjs)",
+      "Bash(node \"C:\\\\Users\\\\LUCASM~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\C--Users-lucasmendes-OneDrive---VCA-Construtora-Documentos-Projetos-acervodocorretor-main\\\\9f5423a5-283c-4654-b6f7-3d78afbd1fdc\\\\scratchpad\\\\create-test-user.mjs\")",
+      "Bash(node ./create-test-user.tmp.mjs)",
+      "Bash(node -e \"const p=require\\('./node_modules/nitro/package.json'\\); console.log\\(Object.keys\\(p.exports\\)\\)\")",
+      "Bash(node *)",
+      "Bash(perl -pi -e 's/import \\\\{ supabase \\\\} from \"\\\\@\\\\/integrations\\\\/supabase\\\\/client\";/import { db } from \"\\\\@\\\\/lib\\\\/localdb\\\\/client\";/; s/import type \\\\{ Database \\\\} from \"\\\\@\\\\/integrations\\\\/supabase\\\\/types\";/import type { Database } from \"\\\\@\\\\/lib\\\\/localdb\\\\/types\";/; s/\\\\bsupabase\\\\./db./g' lib/session.ts components/acervo/UserMenu.tsx routes/__root.tsx routes/auth.tsx routes/reset-password.tsx routes/_authenticated/route.tsx routes/_authenticated/index.tsx routes/_authenticated/perfil.tsx routes/_authenticated/empreendimentos/index.tsx 'routes/_authenticated/empreendimentos/$slug.tsx' routes/_authenticated/admin/route.tsx routes/_authenticated/admin/index.tsx routes/_authenticated/admin/categorias.tsx routes/_authenticated/admin/comunicados.tsx routes/_authenticated/admin/usuarios.tsx routes/_authenticated/admin/empreendimentos/index.tsx 'routes/_authenticated/admin/empreendimentos/$id.tsx')",
+      "Bash(perl -0777 -pi -e 's/import \\\\{ supabase as sb \\\\} from \"\\\\@\\\\/integrations\\\\/supabase\\\\/client\";\\\\n//; s/\\\\bsb\\\\./db./g' 'routes/_authenticated/empreendimentos/$slug.tsx')",
+      "Bash(perl -pi -e 's/\\\\bsupabase\\\\b/db/g' 'routes/_authenticated/empreendimentos/$slug.tsx' routes/_authenticated/empreendimentos/index.tsx routes/_authenticated/index.tsx)",
+      "Bash(bunx tsc *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(./node_modules/.bin/tsc --noEmit)",
+      "Bash(./node_modules/.bin/eslint src/lib/theme.tsx src/components/acervo/ThemeToggle.tsx src/routes/__root.tsx src/routes/auth.tsx src/routes/_authenticated/route.tsx src/components/ui/sonner.tsx)",
+      "Bash(./node_modules/.bin/prettier --write src/lib/theme.tsx src/components/acervo/ThemeToggle.tsx)",
+      "Bash(./node_modules/.bin/eslint src/lib/theme.tsx src/components/acervo/ThemeToggle.tsx)",
+      "Bash(./node_modules/.bin/vite build *)",
+      "Bash(git --version)",
+      "Bash(git config *)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(grep -E \"^\\\\.env$\")"
+    ]
+  }
+}

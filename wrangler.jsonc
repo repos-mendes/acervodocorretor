@@ -1,0 +1,17 @@
+// Configuração de deploy no Cloudflare Workers.
+// Build:  bun run build:cloudflare
+// Deploy: bun run deploy   (requer `wrangler login` na primeira vez)
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "acervo-do-corretor",
+  "main": ".output/server/index.mjs",
+  "compatibility_date": "2026-07-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".output/public",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}
