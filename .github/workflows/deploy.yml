@@ -1,0 +1,48 @@
+# CI/CD — publica o app no Cloudflare Workers automaticamente.
+#
+# Quando roda: a cada envio (push) para a branch "main", ou manualmente
+# pelo botao "Run workflow" na aba Actions do GitHub.
+#
+# Segredos necessarios (Settings > Secrets and variables > Actions no GitHub):
+#   - CLOUDFLARE_API_TOKEN   -> token com permissao "Edit Cloudflare Workers"
+#   - CLOUDFLARE_ACCOUNT_ID  -> ID da sua conta Cloudflare
+#
+# Quando o Supabase for ativado, basta adicionar aqui as variaveis
+# VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY no passo de build.
+
+name: Deploy para Cloudflare
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: {}
+
+# Evita dois deploys rodando ao mesmo tempo; mantem so o mais recente.
+concurrency:
+  group: deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar o codigo
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Build para o Cloudflare
+        run: npm run build:cloudflare
+
+      - name: Publicar no Cloudflare Workers
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
