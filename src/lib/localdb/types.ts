@@ -14,6 +14,7 @@ export type CommercialStatus =
 export type PublicationStatus = "published" | "draft" | "archived";
 export type AnnouncementPriority = "informativo" | "importante" | "urgente";
 export type AnnouncementStatus = "active" | "inactive";
+export type ScriptStatus = "active" | "inactive";
 export type AppRole = "admin" | "corretor";
 export type UserStatus = "ativo" | "inativo";
 
@@ -122,6 +123,20 @@ export type DevelopmentViewRow = {
   viewed_at: string;
 };
 
+// Scripts rápidos: frases/parágrafos que o admin cadastra e o corretor copia
+// com um clique (abordagem, follow-up, objeções, etc.).
+export type ScriptRow = {
+  id: string;
+  title: string;
+  content: string;
+  category: string | null;
+  status: ScriptStatus;
+  sort_order: number;
+  created_by: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
 type TableDef<Row> = { Row: Row; Insert: Partial<Row>; Update: Partial<Row> };
 
 export type Database = {
@@ -135,12 +150,14 @@ export type Database = {
       announcements: TableDef<AnnouncementRow>;
       file_downloads: TableDef<FileDownloadRow>;
       development_views: TableDef<DevelopmentViewRow>;
+      scripts: TableDef<ScriptRow>;
     };
     Enums: {
       commercial_status: CommercialStatus;
       publication_status: PublicationStatus;
       announcement_priority: AnnouncementPriority;
       announcement_status: AnnouncementStatus;
+      script_status: ScriptStatus;
       app_role: AppRole;
       user_status: UserStatus;
     };

@@ -14,7 +14,7 @@ import type { AppRole, TableName } from "./types";
 
 // Versão dos dados locais. Incrementar quando o seed mudar de forma
 // incompatível — o navegador descarta a base antiga e recria a partir do seed.
-const DB_KEY = "acervo.localdb.v2";
+const DB_KEY = "acervo.localdb.v3";
 const SESSION_KEY = "acervo.session.v1";
 
 type Row = Record<string, unknown>;
@@ -141,6 +141,11 @@ function applyInsertDefaults(table: TableName, payload: Row): Row {
         expires_at: null, link_url: null, development_id: null,
         created_by: currentUser()?.id ?? null, updated_at: now(), ...base,
       };
+    case "scripts":
+      return {
+        category: null, status: "active", sort_order: 0,
+        created_by: currentUser()?.id ?? null, updated_at: now(), ...base,
+      };
     case "file_downloads":
       return { development_id: null, downloaded_at: now(), ...base };
     case "development_views":
@@ -248,7 +253,13 @@ class QueryBuilder implements PromiseLike<QueryResult> {
   }
 
   private rows(): Row[] {
-    return (loadState() as unknown as Record<string, Row[]>)[this.table] ?? [];
+    const store = loadState() as unknown as Record<string, Row[]>;
+    // Garante que a tabela exista no estado. Sem isso, um insert numa tabela
+    // ausente (ex.: adicionada ao modelo depois que o navegador já salvou a
+    // base) era descartado silenciosamente, porque `?? []` devolvia um array
+    // temporário que nunca era persistido.
+    if (!Array.isArray(store[this.table])) store[this.table] = [];
+    return store[this.table];
   }
 
   private matching(): Row[] {
