@@ -28,8 +28,8 @@ lugar/celular; **não** serve para dados reais ou sigilosos.
 ## Rodando localmente
 
 ```bash
-bun install
-bun run dev        # http://localhost:3000
+npm install
+npm run dev        # http://localhost:3000
 ```
 
 ### Contas de teste (modo local)
@@ -69,11 +69,11 @@ Implementação em `src/lib/localdb/`:
 O build já está configurado (Nitro preset `cloudflare-module` + `wrangler.jsonc`):
 
 ```bash
-bunx wrangler login        # primeira vez
-bun run deploy             # build + wrangler deploy
+npx wrangler login         # primeira vez
+npm run deploy             # build + wrangler deploy
 ```
 
-Para testar o build do Worker localmente: `bun run build:cloudflare && bunx wrangler dev`.
+Para testar o build do Worker localmente: `npm run build:cloudflare && npx wrangler dev`.
 
 Enquanto o app estiver no modo local, o deploy funciona normalmente — cada visitante terá seu próprio "banco" no navegador (útil para demonstrações).
 
@@ -82,7 +82,22 @@ Enquanto o app estiver no modo local, o deploy funciona normalmente — cada vis
 - Build do Cloudflare: `npm run build:cloudflare` (usa `cross-env`, funciona em Windows e Linux). Saída em `.output/` (server + public).
 - Config de deploy: `wrangler.jsonc` (aponta `main` e o binding de `assets`).
 - `.env` e `.claude/` estão no `.gitignore` (nunca vão para o GitHub).
-- Observação do ambiente local: a máquina Windows atual bloqueia alguns comandos por política de grupo (ex.: `npm run` direto). O build no CI (Linux) não é afetado.
+- Observação do ambiente local: a máquina Windows atual bloqueia alguns comandos por política de grupo (ex.: `npm run` direto). O build no CI (Linux) não é afetado. Se esbarrar nesse bloqueio ao rodar localmente, é preciso liberar com a TI ou usar um contorno.
+
+### Gerenciador de pacotes: npm (padronizado)
+
+O projeto usa **npm** em todos os lugares (local e CI). O único lockfile é
+`package-lock.json`, e o CI (`.github/workflows/deploy.yml`) depende dele via
+`npm ci`. **Não** adicionar `bun.lock`, `bunfig.toml` ou `yarn.lock` — misturar
+gerenciadores faz os locks desencontrarem (versões diferentes no PC e no servidor).
+
+> ⚠️ **Nota para o Claude (assistente):** se em algum momento o projeto mudar de
+> forma que o **bun** passe a ser tecnicamente melhor para este caso (ex.: tempo
+> de build/instalação virar gargalo real, ou surgir necessidade da proteção de
+> supply-chain `minimumReleaseAge` que o bun tem e o npm não), **avise o Lucas** —
+> ele quer ser consultado antes de qualquer migração para bun. O bun é mais rápido
+> na instalação, mas hoje a **consistência** (um só gerenciador) foi escolhida por
+> ser mais segura e simples. Trocar exige alinhar CI + docs + lockfile juntos.
 
 ---
 
