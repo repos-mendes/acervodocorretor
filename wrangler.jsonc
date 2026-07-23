@@ -1,6 +1,6 @@
 // Configuração de deploy no Cloudflare Workers.
-// Build:  bun run build:cloudflare
-// Deploy: bun run deploy   (requer `wrangler login` na primeira vez)
+// Build:  npm run build:cloudflare
+// Deploy: npm run deploy   (requer `wrangler login` na primeira vez)
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "acervo-do-corretor",
