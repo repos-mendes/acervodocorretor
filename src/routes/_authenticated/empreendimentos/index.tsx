@@ -74,7 +74,7 @@ function ListPage() {
           <p className="text-sm text-muted-foreground">Ajuste os filtros ou aguarde novas publicações.</p>
         </div>
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid items-start gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((d) => (
             <DevelopmentCard key={d.id} development={d} />
           ))}
