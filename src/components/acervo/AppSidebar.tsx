@@ -1,6 +1,6 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
-  Home, Building2, User, Shield,
+  Home, Building2, Shield,
   Users, Tag, Megaphone, LayoutDashboard,
 } from "lucide-react";
 import {
@@ -11,10 +11,9 @@ import type { SessionData } from "@/lib/session";
 
 type NavItem = { title: string; url: string; icon: typeof Home; exact?: boolean };
 
+// O perfil é acessado apenas pelo menu do usuário (canto superior direito).
 const brokerItems: NavItem[] = [
-  { title: "Início", url: "/", icon: Home, exact: true },
   { title: "Empreendimentos", url: "/empreendimentos", icon: Building2 },
-  { title: "Meu perfil", url: "/perfil", icon: User },
 ];
 
 const adminItems: NavItem[] = [
