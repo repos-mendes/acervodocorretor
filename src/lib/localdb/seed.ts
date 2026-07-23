@@ -10,6 +10,7 @@ import type {
   FileCategoryRow,
   LocalUser,
   ProfileRow,
+  ScriptRow,
   UserRoleRow,
 } from "./types";
 
@@ -222,6 +223,44 @@ export function buildSeed() {
     },
   ];
 
+  const scripts: ScriptRow[] = [
+    {
+      id: "s-1", title: "Primeiro contato (WhatsApp)",
+      content:
+        "Olá! Tudo bem? Aqui é o(a) corretor(a) da nossa construtora. Vi que você demonstrou interesse em conhecer nossos empreendimentos. Posso te enviar algumas opções que combinam com o que você procura?",
+      category: "Prospecção", status: "active", sort_order: 1,
+      created_by: ADMIN_ID, created_at: daysAgo(20), updated_at: daysAgo(20),
+    },
+    {
+      id: "s-2", title: "Retomar conversa (follow-up)",
+      content:
+        "Oi! Passando para saber se você teve a chance de analisar o material que enviei. Fico à disposição para tirar qualquer dúvida e, se preferir, podemos agendar uma visita ao decorado.",
+      category: "Follow-up", status: "active", sort_order: 2,
+      created_by: ADMIN_ID, created_at: daysAgo(18), updated_at: daysAgo(18),
+    },
+    {
+      id: "s-3", title: "Objeção de preço",
+      content:
+        "Entendo perfeitamente a sua preocupação com o investimento. Posso te mostrar as condições de entrada facilitada e as opções de financiamento? Muitas vezes a parcela cabe melhor no orçamento do que se imagina.",
+      category: "Objeções", status: "active", sort_order: 3,
+      created_by: ADMIN_ID, created_at: daysAgo(15), updated_at: daysAgo(15),
+    },
+    {
+      id: "s-4", title: "Convite para visita",
+      content:
+        "Que tal conhecermos o apartamento decorado pessoalmente? Tenho horários disponíveis esta semana. Qual fica melhor para você: sábado de manhã ou à tarde?",
+      category: "Fechamento", status: "active", sort_order: 4,
+      created_by: ADMIN_ID, created_at: daysAgo(12), updated_at: daysAgo(12),
+    },
+    {
+      id: "s-5", title: "Agradecimento pós-venda",
+      content:
+        "Muito obrigado(a) pela confiança! Foi um prazer participar dessa conquista. Qualquer coisa que precisar, pode contar comigo. Indicações de amigos e familiares são sempre muito bem-vindas!",
+      category: "Pós-venda", status: "active", sort_order: 5,
+      created_by: ADMIN_ID, created_at: daysAgo(8), updated_at: daysAgo(8),
+    },
+  ];
+
   // Conteúdo dos arquivos "seed/*": data URLs servidas pelo storage local
   // sem passar pelo IndexedDB.
   const storage_objects: Record<string, string> = {
@@ -242,7 +281,7 @@ export function buildSeed() {
 
   return {
     users, profiles, user_roles, developments, file_categories,
-    development_files, announcements,
+    development_files, announcements, scripts,
     file_downloads: [], development_views: [],
     storage_objects,
     seeded_at: now(),
