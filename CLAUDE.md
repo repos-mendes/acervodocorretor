@@ -45,7 +45,7 @@ npm run dev        # http://localhost:3000
 
 Para testar o front-end sem depender de serviços externos, **todos os dados vivem no navegador**:
 
-- **Tabelas** (usuários, empreendimentos, arquivos, comunicados, etc.): `localStorage`, chave `acervo.localdb.v1`. Na primeira execução um seed cria as contas de teste, 3 empreendimentos e materiais de demonstração.
+- **Tabelas** (usuários, empreendimentos, arquivos, scripts, etc.): `localStorage`, chave `acervo.localdb.v5`. Na primeira execução um seed cria as contas de teste, os 7 empreendimentos da construtora e materiais de demonstração. A versão da chave está em `DB_KEY` (`src/lib/localdb/client.ts`); incrementá-la recria o banco de cada navegador a partir do seed.
 - **Sessão de login:** `localStorage`, chave `acervo.session.v1`.
 - **Arquivos enviados** (capas, galerias, materiais, avatares): `IndexedDB` (banco `acervo-blobs`), porque o `localStorage` tem limite de ~5MB.
 
