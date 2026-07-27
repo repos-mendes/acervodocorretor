@@ -107,7 +107,7 @@ O código do Supabase **já está no projeto, porém desativado** (por isso esse
 arquivos não devem ser apagados, mesmo sem uso hoje):
 
 - `src/integrations/supabase/*` — cliente e middleware de autenticação.
-- `supabase/migrations/*` — as 3 migrations com o **schema completo** do banco (tabelas, tipos, regras de acesso/RLS).
+- `supabase/migrations/*` — as migrations com o **schema completo** do banco (tabelas, tipos, regras de acesso/RLS). As 3 primeiras vieram do projeto original; `20260727153000_scripts_buckets_e_catalogo.sql` alinha o schema ao app de hoje (cria a tabela `scripts`, remove `announcements`, cria os buckets de Storage) e já insere os 7 empreendimentos com seus scripts.
 - Dependência `@supabase/supabase-js` já instalada.
 
 O acesso a dados está concentrado em `src/lib/localdb/client.ts` e o de arquivos
@@ -117,17 +117,21 @@ imitando o Supabase, a migração é mais **repontar** do que reescrever.
 ### Passos para ativar o Supabase
 
 1. **Criar o projeto no Supabase** (supabase.com) e pegar 3 chaves em Project Settings > API: URL, publishable/anon key e service_role key.
-2. **Aplicar as migrations** que já estão em `supabase/migrations/` no projeto novo.
-3. **Ativar o Supabase no código** (trabalho de programação):
+2. **Aplicar as migrations** que já estão em `supabase/migrations/` no projeto novo, na ordem dos nomes. Ao final o banco já vem com os 7 empreendimentos e os scripts cadastrados — **sem** capas e materiais, que precisam ser enviados pelo painel do admin (SQL não sobe arquivo).
+3. **Criar o primeiro administrador**: cadastre-se pelo app e, no SQL Editor do Supabase, troque o papel para admin (`update public.user_roles set role = 'admin' where user_id = '<seu id>'`). O gatilho de cadastro cria todo mundo como `corretor`.
+4. **Ativar o Supabase no código** (trabalho de programação):
    - **20 arquivos** ainda importam o mock (`@/lib/localdb/client`) — repontar para o cliente Supabase.
    - Migrar o armazenamento de arquivos (`src/lib/storage.ts`) para o Supabase Storage.
-4. **Adicionar as variáveis no CI/CD** (`.github/workflows/deploy.yml`) e como secrets no GitHub / no Worker do Cloudflare:
+   - Regerar `src/integrations/supabase/types.ts` a partir do banco novo: o arquivo atual ainda descreve `announcements` e não conhece `scripts`.
+5. **Adicionar as variáveis no CI/CD** (`.github/workflows/deploy.yml`) e como secrets no GitHub / no Worker do Cloudflare:
    - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (públicas, no build)
    - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (runtime do servidor)
    - `SUPABASE_SERVICE_ROLE_KEY` (🔒 **segredo**, só no Worker, nunca no navegador)
-5. **Testar** login/dados/upload reais e publicar.
+6. **Testar** login/dados/upload reais e publicar.
 
-### Decisão ainda em aberto
+### Decisão tomada: Supabase
 
-Backend real via **Supabase** (código já existe → caminho curto) vs **tudo
-Cloudflare** (D1 + R2 + auth, do zero). Hoje o plano segue com Supabase.
+Em **2026-07-27** o backend real foi definido: **Supabase**. A alternativa
+considerada (tudo em Cloudflare — D1 + R2 + auth, do zero) foi descartada
+porque o código do Supabase já existe no projeto e encurta muito o caminho.
+Não reabrir essa discussão sem um motivo novo.
