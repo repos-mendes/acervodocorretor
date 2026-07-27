@@ -14,7 +14,7 @@ import type { AppRole, TableName } from "./types";
 
 // Versão dos dados locais. Incrementar quando o seed mudar de forma
 // incompatível — o navegador descarta a base antiga e recria a partir do seed.
-const DB_KEY = "acervo.localdb.v4";
+const DB_KEY = "acervo.localdb.v5";
 const SESSION_KEY = "acervo.session.v1";
 
 type Row = Record<string, unknown>;

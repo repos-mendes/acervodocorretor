@@ -48,14 +48,87 @@ function demoPdf(title: string): string {
 
 const ADMIN_ID = "u-admin-0000";
 const CORRETOR_ID = "u-corretor-0000";
-const DEV1 = "d-horizonte";
-const DEV2 = "d-parque-aguas";
-const DEV3 = "d-villa-jardim";
 const CAT_BOOK = "c-book";
 const CAT_IMPLANTACAO = "c-implantacao";
 const CAT_PLANTAS = "c-plantas";
 const CAT_MIDIAS = "c-midias";
 const CAT_TABELAS = "c-tabelas";
+
+/**
+ * Catálogo de empreendimentos pré-cadastrados. Cada item gera: o
+ * empreendimento publicado, a capa em SVG, dois materiais de demonstração
+ * (book e tabela) e o script de apresentação que aparece no menu do
+ * empreendimento em /scripts.
+ *
+ * `description` é o texto fornecido pela construtora. Os campos que ela ainda
+ * não informou (endereço, situação comercial real, galeria) ficam vazios ou no
+ * padrão e devem ser ajustados no painel do admin.
+ */
+const CATALOGO = [
+  {
+    slug: "uni-house-leste", name: "Uni House Leste", type: "Casa",
+    description: "Casa solta de 2 e 3/4, com 45m² e 47m², com quintal amplo e área de lazer completa.",
+    highlights: ["Casa solta", "2 e 3 quartos", "45m² e 47m²", "Quintal amplo", "Área de lazer completa"],
+    neighborhood: null,
+    gradient: ["#22333f", "#3d5a6c"],
+    script:
+      "O Uni House Leste é casa solta de 2 e 3/4, com 45m² e 47m², quintal amplo e área de lazer completa. Quer que eu te envie o book com as plantas e as condições de pagamento?",
+  },
+  {
+    slug: "uni-house-do-marques", name: "Uni House do Marquês", type: "Casa",
+    description: "Casa solta de 2 e 3/4, com 37m² e 45m², com quintal amplo e área de lazer completa.",
+    highlights: ["Casa solta", "2 e 3 quartos", "37m² e 45m²", "Quintal amplo", "Área de lazer completa"],
+    neighborhood: null,
+    gradient: ["#2b3a45", "#4f6d7f"],
+    script:
+      "O Uni House do Marquês é casa solta de 2 e 3/4, com 37m² e 45m², quintal amplo e área de lazer completa. Posso te mandar o book com as plantas e os valores?",
+  },
+  {
+    slug: "bellator-olivia", name: "Bellator Olívia", type: "Casa",
+    description: "Casa solta de 2 e 3/4, sendo ambos 2 suítes, na Olívia Flores, com área de lazer completa.",
+    highlights: ["Casa solta", "2 e 3 quartos", "2 suítes", "Olívia Flores", "Área de lazer completa"],
+    neighborhood: "Olívia Flores",
+    gradient: ["#1f3d33", "#3c6e5a"],
+    script:
+      "O Bellator Olívia fica na Olívia Flores e tem casa solta de 2 e 3/4, ambos com 2 suítes, além de área de lazer completa. Quer conhecer as plantas e a localização?",
+  },
+  {
+    slug: "sculptor", name: "Sculptor", type: "Casa",
+    description: "Casa solta e Casa geminada de 4/4 de 100m², 1 suíte + 2 banheiros sociais e quintal amplo.",
+    highlights: ["Casa solta e geminada", "4 quartos", "100m²", "1 suíte + 2 banheiros sociais", "Quintal amplo"],
+    neighborhood: null,
+    gradient: ["#3a3f4a", "#6b7280"],
+    script:
+      "O Sculptor tem casa solta e geminada de 4/4 com 100m², 1 suíte, 2 banheiros sociais e quintal amplo. É a opção ideal para famílias que precisam de espaço. Posso te enviar as plantas?",
+  },
+  {
+    slug: "vila-do-servidor", name: "Vila do Servidor", type: "Duo Residence",
+    description: "Duo Residence, 2 e 3/4 com e sem suíte. Área de lazer completa e localização privilegiada.",
+    highlights: ["Duo Residence", "2 e 3 quartos", "Com e sem suíte", "Área de lazer completa", "Localização privilegiada"],
+    neighborhood: null,
+    gradient: ["#2f4a3d", "#5a8a72"],
+    script:
+      "A Vila do Servidor é Duo Residence, com opções de 2 e 3/4, com e sem suíte, área de lazer completa e localização privilegiada. Quer que eu te envie o material completo?",
+  },
+  {
+    slug: "uni-ville", name: "Uni Ville", type: "Duo Residence",
+    description: "Duo Residence, 2/4 com e sem suíte. Área de lazer completa e ótima localização.",
+    highlights: ["Duo Residence", "2 quartos", "Com e sem suíte", "Área de lazer completa", "Ótima localização"],
+    neighborhood: null,
+    gradient: ["#31424e", "#587687"],
+    script:
+      "O Uni Ville é Duo Residence de 2/4, com e sem suíte, área de lazer completa e ótima localização. Posso te mandar as plantas e as condições de entrada?",
+  },
+  {
+    slug: "dona-lys", name: "Dona Lys", type: "Duo Residence",
+    description: "Duo Residence, 2 e 3/4 com e sem suíte. Área de lazer completa e localização privilegiada.",
+    highlights: ["Duo Residence", "2 e 3 quartos", "Com e sem suíte", "Área de lazer completa", "Localização privilegiada"],
+    neighborhood: null,
+    gradient: ["#3d2f4a", "#6b5a8a"],
+    script:
+      "A Dona Lys é Duo Residence, com opções de 2 e 3/4, com e sem suíte, área de lazer completa e localização privilegiada. Quer que eu te envie o book com as plantas?",
+  },
+];
 
 export function buildSeed() {
   const users: LocalUser[] = [
@@ -89,137 +162,62 @@ export function buildSeed() {
     { id: CAT_TABELAS, name: "Tabelas de preço", description: "Tabelas de venda vigentes", icon: null, sort_order: 5, is_active: true, created_at: daysAgo(80) },
   ];
 
-  const developments: DevelopmentRow[] = [
-    {
-      id: DEV1, name: "Residencial Horizonte", slug: "residencial-horizonte",
-      short_description: "Apartamentos de 2 e 3 quartos com lazer completo.",
-      full_description: "O Residencial Horizonte une localização privilegiada e lazer completo.\n\nTorres com elevador, área de lazer com piscina, academia e salão de festas. Plantas inteligentes de 58m² a 84m².",
-      commercial_information: "Entrada facilitada em até 36x. Consulte a tabela vigente na biblioteca de materiais.",
-      commercial_status: "lancamento", publication_status: "published",
-      development_type: "Residencial", address: "Av. Olívia Flores, 1200",
-      neighborhood: "Candeias", city: "Vitória da Conquista", maps_url: null,
-      cover_image_url: "seed/horizonte-capa.svg", logo_url: null,
-      gallery_urls: ["seed/horizonte-g1.svg", "seed/horizonte-g2.svg"],
-      highlights: ["2 e 3 quartos", "Piscina e academia", "Varanda gourmet", "A 5 min do centro"],
-      is_featured: true, launch_date: null, sort_order: 1,
-      created_by: ADMIN_ID, created_at: daysAgo(45), updated_at: daysAgo(5),
-    },
-    {
-      id: DEV2, name: "Parque das Águas", slug: "parque-das-aguas",
-      short_description: "Lotes de 250m² a 400m² em condomínio fechado.",
-      full_description: "Loteamento planejado com infraestrutura completa, portaria 24h e áreas verdes preservadas.",
-      commercial_information: null,
-      commercial_status: "em_construcao", publication_status: "published",
-      development_type: "Loteamento", address: null,
-      neighborhood: "Felícia", city: "Vitória da Conquista", maps_url: null,
-      cover_image_url: "seed/parque-capa.svg", logo_url: null,
-      gallery_urls: null,
-      highlights: ["Lotes a partir de 250m²", "Portaria 24h", "Área verde preservada"],
-      is_featured: true, launch_date: null, sort_order: 2,
-      created_by: ADMIN_ID, created_at: daysAgo(30), updated_at: daysAgo(10),
-    },
-    {
-      id: DEV3, name: "Villa Jardim", slug: "villa-jardim",
-      short_description: "Casas em condomínio — em breve.",
-      full_description: null, commercial_information: null,
-      commercial_status: "em_breve", publication_status: "draft",
-      development_type: "Residencial", address: null,
-      neighborhood: null, city: "Vitória da Conquista", maps_url: null,
-      cover_image_url: null, logo_url: null, gallery_urls: null, highlights: [],
-      is_featured: false, launch_date: null, sort_order: 3,
-      created_by: ADMIN_ID, created_at: daysAgo(7), updated_at: daysAgo(7),
-    },
-  ];
+  const developments: DevelopmentRow[] = CATALOGO.map((c, i) => ({
+    id: `d-${c.slug}`, name: c.name, slug: c.slug,
+    short_description: c.description,
+    // Descrição longa, endereço, mapa e galeria ainda não foram informados —
+    // o admin completa pelo painel.
+    full_description: null,
+    commercial_information: null,
+    // Situação comercial real de cada empreendimento ainda não informada:
+    // todos entram como lançamento. Ajustar no painel do admin.
+    commercial_status: "lancamento",
+    publication_status: "published",
+    development_type: c.type,
+    address: null,
+    neighborhood: c.neighborhood,
+    city: "Vitória da Conquista",
+    maps_url: null,
+    cover_image_url: `seed/${c.slug}-capa.svg`,
+    logo_url: null,
+    gallery_urls: null,
+    highlights: c.highlights,
+    is_featured: false,
+    launch_date: null,
+    sort_order: i + 1,
+    created_by: ADMIN_ID,
+    created_at: daysAgo(45 - i),
+    updated_at: daysAgo(45 - i),
+  }));
 
-  const development_files: DevelopmentFileRow[] = [
+  // Dois materiais de demonstração por empreendimento, só para a biblioteca
+  // não ficar vazia. Os arquivos reais entram pelo painel do admin.
+  const development_files: DevelopmentFileRow[] = CATALOGO.flatMap((c) => [
     {
-      id: "f-1", development_id: DEV1, category_id: CAT_TABELAS,
-      title: "Tabela de preços — Julho", description: "Tabela vigente até 31/07.",
-      storage_path: "seed/horizonte-tabela.pdf", original_file_name: "tabela-precos-julho.pdf",
-      file_size: 48_500, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: true, download_count: 32,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(12), updated_at: daysAgo(12),
-    },
-    {
-      id: "f-2", development_id: DEV1, category_id: CAT_BOOK,
-      title: "Book de vendas", description: "Apresentação completa do empreendimento.",
-      storage_path: "seed/horizonte-book.pdf", original_file_name: "book-residencial-horizonte.pdf",
-      file_size: 2_400_000, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: false, download_count: 21,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(40), updated_at: daysAgo(40),
-    },
-    {
-      id: "f-3", development_id: DEV1, category_id: CAT_PLANTAS,
-      title: "Planta tipo 84m²", description: null,
-      storage_path: "seed/horizonte-planta.pdf", original_file_name: "planta-tipo-84.pdf",
-      file_size: 310_000, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: false, download_count: 14,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(38), updated_at: daysAgo(38),
-    },
-    {
-      id: "f-4", development_id: DEV2, category_id: CAT_TABELAS,
-      title: "Tabela de lotes", description: "Valores e condições por quadra.",
-      storage_path: "seed/parque-tabela.pdf", original_file_name: "tabela-lotes.pdf",
-      file_size: 52_000, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: false, download_count: 9,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(9), updated_at: daysAgo(9),
-    },
-    {
-      id: "f-5", development_id: DEV1, category_id: CAT_IMPLANTACAO,
-      title: "Implantação geral", description: "Disposição das torres e áreas comuns.",
-      storage_path: "seed/horizonte-implantacao.pdf", original_file_name: "implantacao-geral.pdf",
-      file_size: 420_000, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: false, download_count: 11,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(36), updated_at: daysAgo(36),
-    },
-    {
-      id: "f-6", development_id: DEV1, category_id: CAT_MIDIAS,
-      title: "Perspectiva da fachada", description: null,
-      storage_path: "seed/horizonte-perspectiva-fachada.svg", original_file_name: "perspectiva-fachada.svg",
-      file_size: 180_000, file_extension: "svg", mime_type: "image/svg+xml",
-      publication_status: "published", is_featured: false, download_count: 7,
+      id: `f-${c.slug}-book`, development_id: `d-${c.slug}`, category_id: CAT_BOOK,
+      title: "Book de vendas", description: `Apresentação completa do ${c.name}.`,
+      storage_path: `seed/${c.slug}-book.pdf`, original_file_name: `book-${c.slug}.pdf`,
+      file_size: 1_800_000, file_extension: "pdf", mime_type: "application/pdf",
+      publication_status: "published" as const, is_featured: true, download_count: 0,
       uploaded_by: ADMIN_ID, created_at: daysAgo(20), updated_at: daysAgo(20),
     },
     {
-      id: "f-7", development_id: DEV1, category_id: CAT_MIDIAS,
-      title: "Perspectiva da área de lazer", description: null,
-      storage_path: "seed/horizonte-perspectiva-lazer.svg", original_file_name: "perspectiva-lazer.svg",
-      file_size: 165_000, file_extension: "svg", mime_type: "image/svg+xml",
-      publication_status: "published", is_featured: false, download_count: 5,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(19), updated_at: daysAgo(19),
+      id: `f-${c.slug}-tabela`, development_id: `d-${c.slug}`, category_id: CAT_TABELAS,
+      title: "Tabela de preços", description: "Tabela de demonstração — substituir pela vigente.",
+      storage_path: `seed/${c.slug}-tabela.pdf`, original_file_name: `tabela-${c.slug}.pdf`,
+      file_size: 48_000, file_extension: "pdf", mime_type: "application/pdf",
+      publication_status: "published" as const, is_featured: false, download_count: 0,
+      uploaded_by: ADMIN_ID, created_at: daysAgo(18), updated_at: daysAgo(18),
     },
-    {
-      id: "f-8", development_id: DEV2, category_id: CAT_IMPLANTACAO,
-      title: "Mapa de quadras e lotes", description: "Implantação com numeração dos lotes.",
-      storage_path: "seed/parque-implantacao.pdf", original_file_name: "mapa-quadras-lotes.pdf",
-      file_size: 510_000, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: true, download_count: 18,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(25), updated_at: daysAgo(25),
-    },
-    {
-      id: "f-9", development_id: DEV2, category_id: CAT_BOOK,
-      title: "Book do loteamento", description: "Apresentação completa do Parque das Águas.",
-      storage_path: "seed/parque-book.pdf", original_file_name: "book-parque-das-aguas.pdf",
-      file_size: 1_900_000, file_extension: "pdf", mime_type: "application/pdf",
-      publication_status: "published", is_featured: false, download_count: 13,
-      uploaded_by: ADMIN_ID, created_at: daysAgo(24), updated_at: daysAgo(24),
-    },
-  ];
+  ]);
 
   const announcements: AnnouncementRow[] = [
     {
-      id: "a-1", title: "Nova tabela do Residencial Horizonte",
-      content: "A tabela de julho já está disponível na biblioteca de materiais. As condições anteriores valem apenas para propostas protocoladas até sexta-feira.",
-      priority: "importante", status: "active",
-      published_at: daysAgo(3), expires_at: null, link_url: null,
-      development_id: DEV1, created_by: ADMIN_ID, created_at: daysAgo(3), updated_at: daysAgo(3),
-    },
-    {
-      id: "a-2", title: "Plantão de vendas no fim de semana",
-      content: "Teremos plantão no stand do Parque das Águas sábado e domingo, das 9h às 17h. Confirmem presença com a coordenação.",
+      id: "a-1", title: "Materiais dos empreendimentos disponíveis",
+      content: "Os empreendimentos já estão cadastrados no acervo. Confira os materiais de cada um e use os scripts prontos para agilizar o atendimento.",
       priority: "informativo", status: "active",
       published_at: daysAgo(1), expires_at: null, link_url: null,
-      development_id: DEV2, created_by: ADMIN_ID, created_at: daysAgo(1), updated_at: daysAgo(1),
+      development_id: null, created_by: ADMIN_ID, created_at: daysAgo(1), updated_at: daysAgo(1),
     },
   ];
 
@@ -266,57 +264,27 @@ export function buildSeed() {
       category: "Pós-venda", status: "active", sort_order: 5,
       created_by: ADMIN_ID, created_at: daysAgo(8), updated_at: daysAgo(8),
     },
-    {
-      id: "s-6", title: "Apresentação do Horizonte",
-      content:
-        "O Residencial Horizonte fica em uma das regiões que mais valorizam da cidade, com apartamentos de 2 e 3 dormitórios e uma área de lazer completa: piscina, academia e espaço gourmet. Quer que eu te envie o book com as plantas?",
-      development_id: DEV1,
-      category: "Prospecção", status: "active", sort_order: 1,
-      created_by: ADMIN_ID, created_at: daysAgo(10), updated_at: daysAgo(10),
-    },
-    {
-      id: "s-7", title: "Condições de entrada — Horizonte",
-      content:
-        "No Residencial Horizonte trabalhamos com entrada facilitada e parcelamento direto com a construtora durante a obra. Posso simular uma condição com o valor de entrada que caiba no seu planejamento?",
-      development_id: DEV1,
-      category: "Objeções", status: "active", sort_order: 2,
-      created_by: ADMIN_ID, created_at: daysAgo(9), updated_at: daysAgo(9),
-    },
-    {
-      id: "s-8", title: "Apresentação do Parque das Águas",
-      content:
-        "O Parque das Águas é um loteamento com lotes a partir de 250m², infraestrutura completa e área verde preservada. É a opção ideal para quem quer construir do jeito que sempre sonhou. Posso te mandar o mapa de quadras disponíveis?",
-      development_id: DEV2,
-      category: "Prospecção", status: "active", sort_order: 1,
-      created_by: ADMIN_ID, created_at: daysAgo(7), updated_at: daysAgo(7),
-    },
-    {
-      id: "s-9", title: "Convite para visita ao Parque das Águas",
-      content:
-        "Que tal conhecer o Parque das Águas pessoalmente? A visita ao loteamento faz toda a diferença para sentir o tamanho dos lotes e a localização. Tenho horários no sábado — qual período fica melhor para você?",
-      development_id: DEV2,
-      category: "Fechamento", status: "active", sort_order: 2,
-      created_by: ADMIN_ID, created_at: daysAgo(6), updated_at: daysAgo(6),
-    },
+    // Um script de apresentação por empreendimento: é o que faz o menu do
+    // empreendimento aparecer na tela de scripts do corretor.
+    ...CATALOGO.map((c) => ({
+      id: `s-${c.slug}`, title: `Apresentação — ${c.name}`,
+      content: c.script,
+      development_id: `d-${c.slug}`,
+      category: "Prospecção", status: "active" as const, sort_order: 1,
+      created_by: ADMIN_ID, created_at: daysAgo(15), updated_at: daysAgo(15),
+    })),
   ];
 
   // Conteúdo dos arquivos "seed/*": data URLs servidas pelo storage local
-  // sem passar pelo IndexedDB.
-  const storage_objects: Record<string, string> = {
-    "covers/seed/horizonte-capa.svg": svgCover("Residencial Horizonte", "#22333f", "#3d5a6c"),
-    "covers/seed/parque-capa.svg": svgCover("Parque das Águas", "#1f3d33", "#3c6e5a"),
-    "galleries/seed/horizonte-g1.svg": svgCover("Área de lazer", "#31424e", "#587687"),
-    "galleries/seed/horizonte-g2.svg": svgCover("Fachada", "#3a3f4a", "#6b7280"),
-    "materials/seed/horizonte-tabela.pdf": demoPdf("Tabela de precos - Julho"),
-    "materials/seed/horizonte-book.pdf": demoPdf("Book de vendas - Residencial Horizonte"),
-    "materials/seed/horizonte-planta.pdf": demoPdf("Planta tipo 84m2"),
-    "materials/seed/parque-tabela.pdf": demoPdf("Tabela de lotes - Parque das Aguas"),
-    "materials/seed/horizonte-implantacao.pdf": demoPdf("Implantacao geral - Residencial Horizonte"),
-    "materials/seed/horizonte-perspectiva-fachada.svg": svgCover("Perspectiva - Fachada", "#2b3a45", "#4f6d7f"),
-    "materials/seed/horizonte-perspectiva-lazer.svg": svgCover("Perspectiva - Area de lazer", "#2f4a3d", "#5a8a72"),
-    "materials/seed/parque-implantacao.pdf": demoPdf("Mapa de quadras e lotes - Parque das Aguas"),
-    "materials/seed/parque-book.pdf": demoPdf("Book do loteamento - Parque das Aguas"),
-  };
+  // sem passar pelo IndexedDB. Capa e materiais são gerados a partir do nome
+  // de cada empreendimento, então nenhum arquivo cita outro por engano.
+  const storage_objects: Record<string, string> = {};
+  for (const c of CATALOGO) {
+    const [from, to] = c.gradient;
+    storage_objects[`covers/seed/${c.slug}-capa.svg`] = svgCover(c.name, from, to);
+    storage_objects[`materials/seed/${c.slug}-book.pdf`] = demoPdf(`Book de vendas - ${c.name}`);
+    storage_objects[`materials/seed/${c.slug}-tabela.pdf`] = demoPdf(`Tabela de precos - ${c.name}`);
+  }
 
   return {
     users, profiles, user_roles, developments, file_categories,
