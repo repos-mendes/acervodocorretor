@@ -129,6 +129,8 @@ export type ScriptRow = {
   id: string;
   title: string;
   content: string;
+  /** Empreendimento a que o script pertence; `null` = script geral. */
+  development_id: string | null;
   category: string | null;
   status: ScriptStatus;
   sort_order: number;

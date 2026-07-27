@@ -8,7 +8,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Plus, Edit, Trash2, MessageSquareText } from "lucide-react";
+import { Plus, Edit, Trash2, MessageSquareText, Building2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/admin/scripts")({
@@ -19,10 +20,24 @@ type Script = {
   id: string;
   title: string;
   content: string;
+  development_id: string | null;
   category: string | null;
   status: "active" | "inactive";
   sort_order: number;
 };
+
+type DevOption = { id: string; name: string };
+
+/** Valor sentinela do Select: o Radix não aceita item com valor vazio. */
+const GERAL = "__geral__";
+
+function useDevelopmentOptions() {
+  return useQuery({
+    queryKey: ["script-development-options"],
+    queryFn: async () =>
+      ((await db.from("developments").select("id, name").order("name")).data ?? []) as DevOption[],
+  });
+}
 
 function ScriptsAdminPage() {
   const qc = useQueryClient();
@@ -34,6 +49,10 @@ function ScriptsAdminPage() {
     queryFn: async () =>
       ((await db.from("scripts").select("*").order("sort_order")).data ?? []) as Script[],
   });
+
+  const { data: developments } = useDevelopmentOptions();
+  const devName = (id: string | null) =>
+    id ? developments?.find((d) => d.id === id)?.name ?? "Empreendimento removido" : null;
 
   async function remove(s: Script) {
     if (!confirm(`Excluir o script "${s.title}"?`)) return;
@@ -70,6 +89,15 @@ function ScriptsAdminPage() {
                 <div className="min-w-0">
                   <div className="flex flex-wrap items-center gap-2">
                     <h3 className="font-display text-lg font-semibold">{s.title}</h3>
+                    <span className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs",
+                      s.development_id
+                        ? "bg-accent/10 text-accent"
+                        : "bg-secondary text-muted-foreground",
+                    )}>
+                      <Building2 className="h-3 w-3" />
+                      {devName(s.development_id) ?? "Geral"}
+                    </span>
                     {s.category && (
                       <span className="rounded-full bg-secondary px-2 py-0.5 text-xs text-muted-foreground">
                         {s.category}
@@ -112,9 +140,12 @@ function ScriptDialog({ open, onOpenChange, editing, onSaved }: {
 }) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [developmentId, setDevelopmentId] = useState(GERAL);
   const [category, setCategory] = useState("");
   const [status, setStatus] = useState<"active" | "inactive">("active");
   const [sortOrder, setSortOrder] = useState("0");
+
+  const { data: developments } = useDevelopmentOptions();
 
   const key = editing?.id ?? "new";
   const [prev, setPrev] = useState(key);
@@ -122,6 +153,7 @@ function ScriptDialog({ open, onOpenChange, editing, onSaved }: {
     setPrev(key);
     setTitle(editing?.title ?? "");
     setContent(editing?.content ?? "");
+    setDevelopmentId(editing?.development_id ?? GERAL);
     setCategory(editing?.category ?? "");
     setStatus(editing?.status ?? "active");
     setSortOrder(String(editing?.sort_order ?? 0));
@@ -132,6 +164,7 @@ function ScriptDialog({ open, onOpenChange, editing, onSaved }: {
     const payload = {
       title: title.trim(),
       content,
+      development_id: developmentId === GERAL ? null : developmentId,
       category: category.trim() || null,
       status,
       sort_order: Number(sortOrder) || 0,
@@ -163,6 +196,21 @@ function ScriptDialog({ open, onOpenChange, editing, onSaved }: {
           <div className="space-y-2">
             <Label>Conteúdo (o texto que será copiado)</Label>
             <Textarea rows={6} value={content} onChange={(e) => setContent(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>Empreendimento</Label>
+            <Select value={developmentId} onValueChange={setDevelopmentId}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value={GERAL}>Geral (serve para qualquer empreendimento)</SelectItem>
+                {(developments ?? []).map((d) => (
+                  <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Scripts de um empreendimento aparecem no menu dele; os gerais ficam na seção de baixo.
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">

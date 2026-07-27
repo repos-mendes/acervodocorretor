@@ -223,11 +223,14 @@ export function buildSeed() {
     },
   ];
 
+  // `development_id: null` = script geral (serve para qualquer abordagem);
+  // com um id preenchido, o script aparece no menu daquele empreendimento.
   const scripts: ScriptRow[] = [
     {
       id: "s-1", title: "Primeiro contato (WhatsApp)",
       content:
         "Olá! Tudo bem? Aqui é o(a) corretor(a) da nossa construtora. Vi que você demonstrou interesse em conhecer nossos empreendimentos. Posso te enviar algumas opções que combinam com o que você procura?",
+      development_id: null,
       category: "Prospecção", status: "active", sort_order: 1,
       created_by: ADMIN_ID, created_at: daysAgo(20), updated_at: daysAgo(20),
     },
@@ -235,6 +238,7 @@ export function buildSeed() {
       id: "s-2", title: "Retomar conversa (follow-up)",
       content:
         "Oi! Passando para saber se você teve a chance de analisar o material que enviei. Fico à disposição para tirar qualquer dúvida e, se preferir, podemos agendar uma visita ao decorado.",
+      development_id: null,
       category: "Follow-up", status: "active", sort_order: 2,
       created_by: ADMIN_ID, created_at: daysAgo(18), updated_at: daysAgo(18),
     },
@@ -242,6 +246,7 @@ export function buildSeed() {
       id: "s-3", title: "Objeção de preço",
       content:
         "Entendo perfeitamente a sua preocupação com o investimento. Posso te mostrar as condições de entrada facilitada e as opções de financiamento? Muitas vezes a parcela cabe melhor no orçamento do que se imagina.",
+      development_id: null,
       category: "Objeções", status: "active", sort_order: 3,
       created_by: ADMIN_ID, created_at: daysAgo(15), updated_at: daysAgo(15),
     },
@@ -249,6 +254,7 @@ export function buildSeed() {
       id: "s-4", title: "Convite para visita",
       content:
         "Que tal conhecermos o apartamento decorado pessoalmente? Tenho horários disponíveis esta semana. Qual fica melhor para você: sábado de manhã ou à tarde?",
+      development_id: null,
       category: "Fechamento", status: "active", sort_order: 4,
       created_by: ADMIN_ID, created_at: daysAgo(12), updated_at: daysAgo(12),
     },
@@ -256,8 +262,41 @@ export function buildSeed() {
       id: "s-5", title: "Agradecimento pós-venda",
       content:
         "Muito obrigado(a) pela confiança! Foi um prazer participar dessa conquista. Qualquer coisa que precisar, pode contar comigo. Indicações de amigos e familiares são sempre muito bem-vindas!",
+      development_id: null,
       category: "Pós-venda", status: "active", sort_order: 5,
       created_by: ADMIN_ID, created_at: daysAgo(8), updated_at: daysAgo(8),
+    },
+    {
+      id: "s-6", title: "Apresentação do Horizonte",
+      content:
+        "O Residencial Horizonte fica em uma das regiões que mais valorizam da cidade, com apartamentos de 2 e 3 dormitórios e uma área de lazer completa: piscina, academia e espaço gourmet. Quer que eu te envie o book com as plantas?",
+      development_id: DEV1,
+      category: "Prospecção", status: "active", sort_order: 1,
+      created_by: ADMIN_ID, created_at: daysAgo(10), updated_at: daysAgo(10),
+    },
+    {
+      id: "s-7", title: "Condições de entrada — Horizonte",
+      content:
+        "No Residencial Horizonte trabalhamos com entrada facilitada e parcelamento direto com a construtora durante a obra. Posso simular uma condição com o valor de entrada que caiba no seu planejamento?",
+      development_id: DEV1,
+      category: "Objeções", status: "active", sort_order: 2,
+      created_by: ADMIN_ID, created_at: daysAgo(9), updated_at: daysAgo(9),
+    },
+    {
+      id: "s-8", title: "Apresentação do Parque das Águas",
+      content:
+        "O Parque das Águas é um loteamento com lotes a partir de 250m², infraestrutura completa e área verde preservada. É a opção ideal para quem quer construir do jeito que sempre sonhou. Posso te mandar o mapa de quadras disponíveis?",
+      development_id: DEV2,
+      category: "Prospecção", status: "active", sort_order: 1,
+      created_by: ADMIN_ID, created_at: daysAgo(7), updated_at: daysAgo(7),
+    },
+    {
+      id: "s-9", title: "Convite para visita ao Parque das Águas",
+      content:
+        "Que tal conhecer o Parque das Águas pessoalmente? A visita ao loteamento faz toda a diferença para sentir o tamanho dos lotes e a localização. Tenho horários no sábado — qual período fica melhor para você?",
+      development_id: DEV2,
+      category: "Fechamento", status: "active", sort_order: 2,
+      created_by: ADMIN_ID, created_at: daysAgo(6), updated_at: daysAgo(6),
     },
   ];
 

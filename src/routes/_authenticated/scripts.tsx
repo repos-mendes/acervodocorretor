@@ -4,9 +4,10 @@ import { useMemo, useState } from "react";
 import { db } from "@/lib/localdb/client";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { copyText } from "@/lib/clipboard";
 import { cn } from "@/lib/utils";
-import { Search, Copy, Check, MessageSquareText } from "lucide-react";
+import { Search, Copy, Check, MessageSquareText, Building2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/scripts")({
@@ -17,43 +18,87 @@ type Script = {
   id: string;
   title: string;
   content: string;
+  development_id: string | null;
   category: string | null;
   sort_order: number;
 };
 
-const SEM_CATEGORIA = "Geral";
+type Development = { id: string; name: string; sort_order: number };
+
+type Group = { id: string; name: string; scripts: Script[] };
 
 function ScriptsPage() {
   const [q, setQ] = useState("");
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
-  const { data, isLoading } = useQuery({
+  const { data: scripts, isLoading } = useQuery({
     queryKey: ["broker-scripts"],
     queryFn: async () => {
       const { data } = await db
         .from("scripts")
-        .select("id, title, content, category, sort_order")
+        .select("id, title, content, development_id, category, sort_order")
         .eq("status", "active")
         .order("sort_order");
       return (data ?? []) as Script[];
     },
   });
 
-  const groups = useMemo(() => {
-    const lc = q.trim().toLowerCase();
-    const filtered = (data ?? []).filter((s) =>
-      !lc
-        ? true
-        : [s.title, s.content, s.category].some((f) => f?.toLowerCase().includes(lc)),
-    );
+  // Só empreendimentos publicados: um script preso a um empreendimento fora do
+  // ar não deve vazar para o corretor.
+  const { data: developments } = useQuery({
+    queryKey: ["published-development-names"],
+    queryFn: async () => {
+      const { data } = await db
+        .from("developments")
+        .select("id, name, sort_order")
+        .eq("publication_status", "published")
+        .order("sort_order");
+      return (data ?? []) as Development[];
+    },
+  });
 
-    const byCategory = new Map<string, Script[]>();
-    for (const s of filtered) {
-      const key = s.category?.trim() || SEM_CATEGORIA;
-      if (!byCategory.has(key)) byCategory.set(key, []);
-      byCategory.get(key)!.push(s);
+  const { byDevelopment, gerais, total } = useMemo(() => {
+    const lc = q.trim().toLowerCase();
+    const matches = (s: Script) =>
+      !lc || [s.title, s.content, s.category].some((f) => f?.toLowerCase().includes(lc));
+
+    const visible = (scripts ?? []).filter(matches);
+    const published = new Map((developments ?? []).map((d) => [d.id, d]));
+
+    const grouped = new Map<string, Script[]>();
+    const soltos: Script[] = [];
+    for (const s of visible) {
+      if (!s.development_id) {
+        soltos.push(s);
+      } else if (published.has(s.development_id)) {
+        if (!grouped.has(s.development_id)) grouped.set(s.development_id, []);
+        grouped.get(s.development_id)!.push(s);
+      }
+      // Script de empreendimento despublicado: fica oculto, como os materiais.
     }
-    return Array.from(byCategory, ([name, scripts]) => ({ name, scripts }));
-  }, [data, q]);
+
+    // Mantém a ordem dos empreendimentos e descarta os que ficaram sem script.
+    const groups: Group[] = (developments ?? [])
+      .filter((d) => grouped.has(d.id))
+      .map((d) => ({ id: d.id, name: d.name, scripts: grouped.get(d.id)! }));
+
+    return {
+      byDevelopment: groups,
+      gerais: soltos,
+      total: groups.reduce((n, g) => n + g.scripts.length, 0) + soltos.length,
+    };
+  }, [scripts, developments, q]);
+
+  // Durante a busca todos os menus abrem, senão o resultado ficaria escondido.
+  const searching = q.trim().length > 0;
+  const isOpen = (id: string) => searching || expanded.has(id);
+  const toggle = (id: string) =>
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
@@ -75,12 +120,12 @@ function ScriptsPage() {
       </div>
 
       {isLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-40 rounded-xl" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 rounded-xl" />
           ))}
         </div>
-      ) : groups.length === 0 ? (
+      ) : total === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-dashed py-16 text-center">
           <MessageSquareText className="h-10 w-10 text-muted-foreground/40" />
           <p className="mt-3 font-medium">
@@ -92,25 +137,95 @@ function ScriptsPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          {groups.map((g) => (
-            <section key={g.name} className="space-y-3">
+          {byDevelopment.length > 0 && (
+            <section className="space-y-3">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                {g.name}
+                Por empreendimento
               </h2>
-              <div className="grid items-start gap-3 sm:grid-cols-2">
-                {g.scripts.map((s) => (
-                  <ScriptCard key={s.id} script={s} />
+              <div className="space-y-2">
+                {byDevelopment.map((g) => (
+                  <DevelopmentScripts
+                    key={g.id}
+                    group={g}
+                    open={isOpen(g.id)}
+                    onOpenChange={() => toggle(g.id)}
+                  />
                 ))}
               </div>
             </section>
-          ))}
+          )}
+
+          {gerais.length > 0 && (
+            <section className="space-y-3">
+              <div>
+                <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Scripts gerais
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Servem para qualquer empreendimento e vários tipos de abordagem.
+                </p>
+              </div>
+              <div className="grid items-start gap-3 sm:grid-cols-2">
+                {gerais.map((s) => (
+                  <ScriptCard key={s.id} script={s} showCategory />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-function ScriptCard({ script }: { script: Script }) {
+/** Menu suspenso de um empreendimento: nome na barra, scripts dentro. */
+function DevelopmentScripts({
+  group,
+  open,
+  onOpenChange,
+}: {
+  group: Group;
+  open: boolean;
+  onOpenChange: () => void;
+}) {
+  const count = group.scripts.length;
+
+  return (
+    <Collapsible
+      open={open}
+      onOpenChange={onOpenChange}
+      className="overflow-hidden rounded-xl border bg-card"
+    >
+      <CollapsibleTrigger className="flex w-full items-center gap-3 p-4 text-left transition-colors hover:bg-secondary/40">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent/10 text-accent">
+          <Building2 className="h-5 w-5" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <h3 className="truncate font-display text-base font-semibold">{group.name}</h3>
+          <p className="text-xs text-muted-foreground">
+            {count} {count === 1 ? "script" : "scripts"}
+          </p>
+        </div>
+        <ChevronDown
+          className={cn(
+            "h-5 w-5 shrink-0 text-muted-foreground transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        />
+      </CollapsibleTrigger>
+
+      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+        <div className="grid items-start gap-3 border-t bg-secondary/20 p-3 sm:grid-cols-2">
+          {group.scripts.map((s) => (
+            <ScriptCard key={s.id} script={s} showCategory />
+          ))}
+        </div>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+function ScriptCard({ script, showCategory }: { script: Script; showCategory?: boolean }) {
   const [copied, setCopied] = useState(false);
 
   async function handleCopy() {
@@ -146,6 +261,11 @@ function ScriptCard({ script }: { script: Script }) {
           {copied ? "Copiado" : "Copiar"}
         </span>
       </div>
+      {showCategory && script.category && (
+        <span className="mb-2 w-fit rounded-full bg-secondary px-2 py-0.5 text-[11px] text-muted-foreground">
+          {script.category}
+        </span>
+      )}
       <p className="whitespace-pre-line text-sm text-muted-foreground line-clamp-5">
         {script.content}
       </p>
