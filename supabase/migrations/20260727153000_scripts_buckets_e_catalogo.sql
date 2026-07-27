@@ -4,7 +4,8 @@
 -- 2) Cria a tabela de scripts rápidos, que nasceu depois das migrations
 --    originais e por isso nunca existiu aqui.
 -- 3) Cria os buckets de Storage que as políticas já pressupunham.
--- 4) Insere os 7 empreendimentos da construtora e seus scripts.
+-- 4) Unifica as categorias de arquivo nas 5 que o app usa.
+-- 5) Insere os 7 empreendimentos da construtora e seus scripts.
 --
 -- Escrita para ser re-executável: rodar duas vezes não duplica nada.
 
@@ -80,7 +81,44 @@ INSERT INTO storage.buckets (id, name, public) VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- =========================
--- 4) CATÁLOGO DE EMPREENDIMENTOS
+-- 4) CATEGORIAS DE ARQUIVO
+-- =========================
+-- A migration original semeou 11 categorias; o app trabalha com 5. Esta é a
+-- lista única, a mesma do seed local (src/lib/localdb/seed.ts).
+--
+-- "Plantas" e "Tabelas de preço" já existem com esses nomes e são atualizadas
+-- no lugar (ON CONFLICT), preservando o id — assim nenhum arquivo já
+-- classificado perde a categoria.
+--
+-- A coluna `icon` fica NULL como no mock: o app resolve o ícone pelo nome da
+-- categoria (categoryIcon em DevelopmentCard.tsx), então a coluna não é usada.
+INSERT INTO public.file_categories (name, description, icon, sort_order, is_active) VALUES
+  ('Book',                             'Apresentação institucional de vendas', NULL, 1, true),
+  ('Implantação',                      'Implantação geral e mapa de quadras',  NULL, 2, true),
+  ('Plantas',                          'Plantas baixas por tipologia',         NULL, 3, true),
+  ('Vídeos e imagens de apresentação', 'Perspectivas, fotos e vídeos',         NULL, 4, true),
+  ('Tabelas de preço',                 'Tabelas de venda vigentes',            NULL, 5, true)
+ON CONFLICT (name) DO UPDATE SET
+  description = EXCLUDED.description,
+  icon        = EXCLUDED.icon,
+  sort_order  = EXCLUDED.sort_order,
+  is_active   = true;
+
+-- Remove as 9 categorias que sobraram da lista antiga.
+-- `development_files.category_id` é ON DELETE SET NULL: se algum arquivo
+-- estivesse numa dessas categorias, ele ficaria sem categoria — o arquivo em si
+-- não é apagado. Na primeira aplicação não existe arquivo nenhum.
+DELETE FROM public.file_categories
+WHERE name NOT IN (
+  'Book',
+  'Implantação',
+  'Plantas',
+  'Vídeos e imagens de apresentação',
+  'Tabelas de preço'
+);
+
+-- =========================
+-- 5) CATÁLOGO DE EMPREENDIMENTOS
 -- =========================
 -- `created_by` fica NULL: na hora que esta migration roda ainda não existe
 -- nenhum usuário. Capa, galeria e materiais entram depois, pelo painel do
@@ -129,7 +167,7 @@ VALUES
 ON CONFLICT (slug) DO NOTHING;
 
 -- =========================
--- 5) SCRIPTS DO CATÁLOGO
+-- 6) SCRIPTS DO CATÁLOGO
 -- =========================
 -- Um script de apresentação por empreendimento. O empreendimento é resolvido
 -- pelo slug, então não dependemos de UUID fixo.
