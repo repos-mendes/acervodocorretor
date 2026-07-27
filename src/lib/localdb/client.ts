@@ -109,7 +109,6 @@ function currentUser(): AuthUser | null {
 // FKs usadas nos selects com relação embutida, ex.: "*, file_categories(name)".
 const FK_MAP: Partial<Record<TableName, Record<string, string>>> = {
   development_files: { file_categories: "category_id", developments: "development_id" },
-  announcements: { developments: "development_id" },
   file_downloads: { developments: "development_id", development_files: "file_id" },
 };
 
@@ -135,12 +134,6 @@ function applyInsertDefaults(table: TableName, payload: Row): Row {
       };
     case "file_categories":
       return { description: null, icon: null, sort_order: 0, is_active: true, ...base };
-    case "announcements":
-      return {
-        priority: "informativo", status: "active", published_at: now(),
-        expires_at: null, link_url: null, development_id: null,
-        created_by: currentUser()?.id ?? null, updated_at: now(), ...base,
-      };
     case "scripts":
       return {
         development_id: null, category: null, status: "active", sort_order: 0,

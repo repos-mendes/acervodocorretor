@@ -18,7 +18,6 @@ import { Route as AuthenticatedPerfilRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedScriptsRouteImport } from './routes/_authenticated/scripts'
 import { Route as AuthenticatedAdminIndexRouteImport } from './routes/_authenticated/admin/index'
 import { Route as AuthenticatedAdminCategoriasRouteImport } from './routes/_authenticated/admin/categorias'
-import { Route as AuthenticatedAdminComunicadosRouteImport } from './routes/_authenticated/admin/comunicados'
 import { Route as AuthenticatedAdminScriptsRouteImport } from './routes/_authenticated/admin/scripts'
 import { Route as AuthenticatedAdminUsuariosRouteImport } from './routes/_authenticated/admin/usuarios'
 import { Route as AuthenticatedEmpreendimentosIndexRouteImport } from './routes/_authenticated/empreendimentos/index'
@@ -71,12 +70,6 @@ const AuthenticatedAdminCategoriasRoute =
     path: '/categorias',
     getParentRoute: () => AuthenticatedAdminRouteRoute,
   } as any)
-const AuthenticatedAdminComunicadosRoute =
-  AuthenticatedAdminComunicadosRouteImport.update({
-    id: '/comunicados',
-    path: '/comunicados',
-    getParentRoute: () => AuthenticatedAdminRouteRoute,
-  } as any)
 const AuthenticatedAdminScriptsRoute =
   AuthenticatedAdminScriptsRouteImport.update({
     id: '/scripts',
@@ -122,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/perfil': typeof AuthenticatedPerfilRoute
   '/scripts': typeof AuthenticatedScriptsRoute
   '/admin/categorias': typeof AuthenticatedAdminCategoriasRoute
-  '/admin/comunicados': typeof AuthenticatedAdminComunicadosRoute
   '/admin/scripts': typeof AuthenticatedAdminScriptsRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/empreendimentos/$slug': typeof AuthenticatedEmpreendimentosSlugRoute
@@ -138,7 +130,6 @@ export interface FileRoutesByTo {
   '/scripts': typeof AuthenticatedScriptsRoute
   '/': typeof AuthenticatedIndexRoute
   '/admin/categorias': typeof AuthenticatedAdminCategoriasRoute
-  '/admin/comunicados': typeof AuthenticatedAdminComunicadosRoute
   '/admin/scripts': typeof AuthenticatedAdminScriptsRoute
   '/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/empreendimentos/$slug': typeof AuthenticatedEmpreendimentosSlugRoute
@@ -157,7 +148,6 @@ export interface FileRoutesById {
   '/_authenticated/scripts': typeof AuthenticatedScriptsRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/admin/categorias': typeof AuthenticatedAdminCategoriasRoute
-  '/_authenticated/admin/comunicados': typeof AuthenticatedAdminComunicadosRoute
   '/_authenticated/admin/scripts': typeof AuthenticatedAdminScriptsRoute
   '/_authenticated/admin/usuarios': typeof AuthenticatedAdminUsuariosRoute
   '/_authenticated/empreendimentos/$slug': typeof AuthenticatedEmpreendimentosSlugRoute
@@ -176,7 +166,6 @@ export interface FileRouteTypes {
     | '/perfil'
     | '/scripts'
     | '/admin/categorias'
-    | '/admin/comunicados'
     | '/admin/scripts'
     | '/admin/usuarios'
     | '/empreendimentos/$slug'
@@ -192,7 +181,6 @@ export interface FileRouteTypes {
     | '/scripts'
     | '/'
     | '/admin/categorias'
-    | '/admin/comunicados'
     | '/admin/scripts'
     | '/admin/usuarios'
     | '/empreendimentos/$slug'
@@ -210,7 +198,6 @@ export interface FileRouteTypes {
     | '/_authenticated/scripts'
     | '/_authenticated/'
     | '/_authenticated/admin/categorias'
-    | '/_authenticated/admin/comunicados'
     | '/_authenticated/admin/scripts'
     | '/_authenticated/admin/usuarios'
     | '/_authenticated/empreendimentos/$slug'
@@ -291,13 +278,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAdminCategoriasRouteImport
       parentRoute: typeof AuthenticatedAdminRouteRoute
     }
-    '/_authenticated/admin/comunicados': {
-      id: '/_authenticated/admin/comunicados'
-      path: '/comunicados'
-      fullPath: '/admin/comunicados'
-      preLoaderRoute: typeof AuthenticatedAdminComunicadosRouteImport
-      parentRoute: typeof AuthenticatedAdminRouteRoute
-    }
     '/_authenticated/admin/scripts': {
       id: '/_authenticated/admin/scripts'
       path: '/scripts'
@@ -345,7 +325,6 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedAdminRouteRouteChildren {
   AuthenticatedAdminCategoriasRoute: typeof AuthenticatedAdminCategoriasRoute
-  AuthenticatedAdminComunicadosRoute: typeof AuthenticatedAdminComunicadosRoute
   AuthenticatedAdminScriptsRoute: typeof AuthenticatedAdminScriptsRoute
   AuthenticatedAdminUsuariosRoute: typeof AuthenticatedAdminUsuariosRoute
   AuthenticatedAdminIndexRoute: typeof AuthenticatedAdminIndexRoute
@@ -356,7 +335,6 @@ interface AuthenticatedAdminRouteRouteChildren {
 const AuthenticatedAdminRouteRouteChildren: AuthenticatedAdminRouteRouteChildren =
   {
     AuthenticatedAdminCategoriasRoute: AuthenticatedAdminCategoriasRoute,
-    AuthenticatedAdminComunicadosRoute: AuthenticatedAdminComunicadosRoute,
     AuthenticatedAdminScriptsRoute: AuthenticatedAdminScriptsRoute,
     AuthenticatedAdminUsuariosRoute: AuthenticatedAdminUsuariosRoute,
     AuthenticatedAdminIndexRoute: AuthenticatedAdminIndexRoute,

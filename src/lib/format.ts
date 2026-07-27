@@ -2,7 +2,6 @@ import type { Database } from "@/lib/localdb/types";
 
 export type CommercialStatus = Database["public"]["Enums"]["commercial_status"];
 export type PublicationStatus = Database["public"]["Enums"]["publication_status"];
-export type AnnouncementPriority = Database["public"]["Enums"]["announcement_priority"];
 export type AppRole = Database["public"]["Enums"]["app_role"];
 export type UserStatus = Database["public"]["Enums"]["user_status"];
 
@@ -19,12 +18,6 @@ export const publicationStatusLabel: Record<PublicationStatus, string> = {
   published: "Publicado",
   draft: "Rascunho",
   archived: "Arquivado",
-};
-
-export const priorityLabel: Record<AnnouncementPriority, string> = {
-  informativo: "Informativo",
-  importante: "Importante",
-  urgente: "Urgente",
 };
 
 export const roleLabel: Record<AppRole, string> = {

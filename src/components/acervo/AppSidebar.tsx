@@ -1,7 +1,7 @@
 import { Link, useRouterState } from "@tanstack/react-router";
 import {
   Home, Building2, Shield, MessageSquareText,
-  Users, Tag, Megaphone, LayoutDashboard,
+  Users, Tag, LayoutDashboard,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -23,7 +23,6 @@ const adminItems: NavItem[] = [
   { title: "Categorias", url: "/admin/categorias", icon: Tag },
   { title: "Scripts", url: "/admin/scripts", icon: MessageSquareText },
   { title: "Usuários", url: "/admin/usuarios", icon: Users },
-  { title: "Comunicados", url: "/admin/comunicados", icon: Megaphone },
 ];
 
 export function AppSidebar({ session }: { session: SessionData }) {

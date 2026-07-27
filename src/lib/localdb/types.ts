@@ -12,8 +12,6 @@ export type CommercialStatus =
   | "indisponivel";
 
 export type PublicationStatus = "published" | "draft" | "archived";
-export type AnnouncementPriority = "informativo" | "importante" | "urgente";
-export type AnnouncementStatus = "active" | "inactive";
 export type ScriptStatus = "active" | "inactive";
 export type AppRole = "admin" | "corretor";
 export type UserStatus = "ativo" | "inativo";
@@ -93,21 +91,6 @@ export type DevelopmentFileRow = {
   updated_at: string;
 };
 
-export type AnnouncementRow = {
-  id: string;
-  title: string;
-  content: string;
-  priority: AnnouncementPriority;
-  status: AnnouncementStatus;
-  published_at: string;
-  expires_at: string | null;
-  link_url: string | null;
-  development_id: string | null;
-  created_by: string | null;
-  created_at: string;
-  updated_at: string;
-};
-
 export type FileDownloadRow = {
   id: string;
   file_id: string;
@@ -149,7 +132,6 @@ export type Database = {
       developments: TableDef<DevelopmentRow>;
       file_categories: TableDef<FileCategoryRow>;
       development_files: TableDef<DevelopmentFileRow>;
-      announcements: TableDef<AnnouncementRow>;
       file_downloads: TableDef<FileDownloadRow>;
       development_views: TableDef<DevelopmentViewRow>;
       scripts: TableDef<ScriptRow>;
@@ -157,8 +139,6 @@ export type Database = {
     Enums: {
       commercial_status: CommercialStatus;
       publication_status: PublicationStatus;
-      announcement_priority: AnnouncementPriority;
-      announcement_status: AnnouncementStatus;
       script_status: ScriptStatus;
       app_role: AppRole;
       user_status: UserStatus;
