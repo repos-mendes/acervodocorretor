@@ -107,7 +107,7 @@ O código do Supabase **já está no projeto, porém desativado** (por isso esse
 arquivos não devem ser apagados, mesmo sem uso hoje):
 
 - `src/integrations/supabase/*` — cliente e middleware de autenticação.
-- `supabase/migrations/*` — as migrations com o **schema completo** do banco (tabelas, tipos, regras de acesso/RLS). As 3 primeiras vieram do projeto original; `20260727153000_scripts_buckets_e_catalogo.sql` alinha o schema ao app de hoje (cria a tabela `scripts`, remove `announcements`, cria os buckets de Storage) e já insere os 7 empreendimentos com seus scripts.
+- `supabase/migrations/*` — as migrations com o **schema completo** do banco (tabelas, tipos, regras de acesso/RLS). As 3 primeiras vieram do projeto original; `20260727153000_scripts_buckets_e_catalogo.sql` alinha o schema ao app de hoje (cria a tabela `scripts`, remove `announcements`, cria os buckets de Storage, unifica as categorias de arquivo nas 5 do app) e já insere os 7 empreendimentos com seus scripts.
 - Dependência `@supabase/supabase-js` já instalada.
 
 O acesso a dados está concentrado em `src/lib/localdb/client.ts` e o de arquivos
