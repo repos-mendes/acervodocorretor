@@ -10,9 +10,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { PublicationBadge } from "@/components/acervo/StatusBadge";
+import { FileTypeIcon } from "@/components/acervo/FileTypeIcon";
 import { publicationStatusLabel, formatBytes } from "@/lib/format";
 import type { PublicationStatus } from "@/lib/format";
-import { ArrowLeft, Upload, Trash2, Edit, FileText, Star, Loader2 } from "lucide-react";
+import { ArrowLeft, Upload, Trash2, Edit, Star, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { uploadFile, removeFile } from "@/lib/storage";
 
@@ -106,9 +107,7 @@ function DevelopmentFilesPage() {
           <ul className="divide-y">
             {files.map((f) => (
               <li key={f.id} className="flex items-center gap-3 p-3">
-                <div className="flex h-10 w-10 items-center justify-center rounded-md bg-secondary text-muted-foreground shrink-0">
-                  <FileText className="h-5 w-5" />
-                </div>
+                <FileTypeIcon extension={f.file_extension} fileName={f.original_file_name} />
                 <div className="min-w-0 flex-1">
                   <div className="flex items-center gap-2 flex-wrap">
                     <span className="font-medium truncate">{f.title}</span>
