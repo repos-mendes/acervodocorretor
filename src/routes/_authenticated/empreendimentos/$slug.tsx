@@ -4,10 +4,12 @@ import { useEffect, useMemo, useState } from "react";
 import { db } from "@/lib/localdb/client";
 import { SignedImage } from "@/components/acervo/SignedImage";
 import { CommercialBadge } from "@/components/acervo/StatusBadge";
+import { FileTypeIcon } from "@/components/acervo/FileTypeIcon";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ArrowLeft, MapPin, Download, Package, FileText, Star, ChevronLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, MapPin, Download, Package, Star, ChevronLeft, ChevronRight } from "lucide-react";
 import { downloadFile, downloadFilesAsZip } from "@/lib/downloads";
 import { formatBytes } from "@/lib/format";
 import { toast } from "sonner";
@@ -235,8 +237,13 @@ function FileList({ files, developmentId, developmentName }: { files: FileRow[];
     <div className="space-y-3">
       {files.length > 1 && (
         <div className="flex items-center justify-between rounded-lg border bg-secondary/30 px-3 py-2">
-          <label className="flex items-center gap-2 text-sm cursor-pointer">
-            <input type="checkbox" checked={allSelected} onChange={(e) => setSelected(e.target.checked ? new Set(files.map((f) => f.id)) : new Set())} />
+          <label htmlFor="select-all" className="flex cursor-pointer items-center gap-2.5 py-1 text-sm">
+            <Checkbox
+              id="select-all"
+              className="h-5 w-5"
+              checked={allSelected}
+              onCheckedChange={(v) => setSelected(v ? new Set(files.map((f) => f.id)) : new Set())}
+            />
             {selected.size > 0 ? `${selected.size} selecionado(s)` : "Selecionar todos"}
           </label>
           <Button size="sm" disabled={selected.size === 0 || zipping} onClick={downloadZip}>
@@ -247,10 +254,17 @@ function FileList({ files, developmentId, developmentName }: { files: FileRow[];
       <ul className="divide-y rounded-lg border">
         {files.map((f) => (
           <li key={f.id} className="flex items-center gap-3 p-3 hover:bg-secondary/30 transition-colors">
-            <input type="checkbox" checked={selected.has(f.id)} onChange={() => toggle(f.id)} className="shrink-0" />
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
-              <FileText className="h-5 w-5" />
-            </div>
+            {/* O label em volta amplia a área de toque no celular sem aumentar a caixinha. */}
+            <label htmlFor={`file-${f.id}`} className="-m-1.5 shrink-0 cursor-pointer p-1.5">
+              <Checkbox
+                id={`file-${f.id}`}
+                className="h-5 w-5"
+                checked={selected.has(f.id)}
+                onCheckedChange={() => toggle(f.id)}
+                aria-label={`Selecionar ${f.title}`}
+              />
+            </label>
+            <FileTypeIcon extension={f.file_extension} fileName={f.original_file_name} />
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2">
                 <span className="font-medium truncate">{f.title}</span>
@@ -261,7 +275,7 @@ function FileList({ files, developmentId, developmentName }: { files: FileRow[];
                 {f.file_extension?.toUpperCase() || "ARQUIVO"} · {formatBytes(f.file_size)}
               </p>
             </div>
-            <Button variant="ghost" size="sm" onClick={() => handleDownload(f)}>
+            <Button variant="ghost" size="sm" onClick={() => handleDownload(f)} title="Baixar" aria-label={`Baixar ${f.title}`}>
               <Download className="h-4 w-4" />
             </Button>
           </li>
