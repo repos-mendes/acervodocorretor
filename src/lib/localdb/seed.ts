@@ -4,7 +4,6 @@
 //   corretor@acervo.local / corretor123
 
 import type {
-  AnnouncementRow,
   DevelopmentFileRow,
   DevelopmentRow,
   FileCategoryRow,
@@ -211,16 +210,6 @@ export function buildSeed() {
     },
   ]);
 
-  const announcements: AnnouncementRow[] = [
-    {
-      id: "a-1", title: "Materiais dos empreendimentos disponíveis",
-      content: "Os empreendimentos já estão cadastrados no acervo. Confira os materiais de cada um e use os scripts prontos para agilizar o atendimento.",
-      priority: "informativo", status: "active",
-      published_at: daysAgo(1), expires_at: null, link_url: null,
-      development_id: null, created_by: ADMIN_ID, created_at: daysAgo(1), updated_at: daysAgo(1),
-    },
-  ];
-
   // `development_id: null` = script geral (serve para qualquer abordagem);
   // com um id preenchido, o script aparece no menu daquele empreendimento.
   const scripts: ScriptRow[] = [
@@ -288,7 +277,7 @@ export function buildSeed() {
 
   return {
     users, profiles, user_roles, developments, file_categories,
-    development_files, announcements, scripts,
+    development_files, scripts,
     file_downloads: [], development_views: [],
     storage_objects,
     seeded_at: now(),

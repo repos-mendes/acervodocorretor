@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { db } from "@/lib/localdb/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Building2, Users, Download, Eye, FileText, Megaphone } from "lucide-react";
+import { Building2, Users, Download, Eye, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export const Route = createFileRoute("/_authenticated/admin/")({
@@ -15,19 +15,17 @@ function AdminDashboard() {
     queryFn: async () => {
       const now = new Date();
       const monthAgo = new Date(now.getTime() - 30 * 86400_000).toISOString();
-      const [devs, files, users, downloads, views, announcements, topDownloads] = await Promise.all([
+      const [devs, files, users, downloads, views, topDownloads] = await Promise.all([
         db.from("developments").select("id", { count: "exact", head: true }),
         db.from("development_files").select("id", { count: "exact", head: true }),
         db.from("profiles").select("id", { count: "exact", head: true }).eq("status", "ativo"),
         db.from("file_downloads").select("id", { count: "exact", head: true }).gte("downloaded_at", monthAgo),
         db.from("development_views").select("id", { count: "exact", head: true }).gte("viewed_at", monthAgo),
-        db.from("announcements").select("id", { count: "exact", head: true }).eq("status", "active"),
         db.from("development_files").select("id, title, download_count, developments(name)").order("download_count", { ascending: false }).limit(5),
       ]);
       return {
         devs: devs.count ?? 0, files: files.count ?? 0, users: users.count ?? 0,
         downloads: downloads.count ?? 0, views: views.count ?? 0,
-        announcements: announcements.count ?? 0,
         topDownloads: topDownloads.data ?? [],
       };
     },
@@ -42,7 +40,7 @@ function AdminDashboard() {
 
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {Array.from({ length: 6 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
+          {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-28 rounded-xl" />)}
         </div>
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -51,7 +49,6 @@ function AdminDashboard() {
           <Stat icon={Users} label="Corretores ativos" value={data?.users ?? 0} />
           <Stat icon={Download} label="Downloads (30d)" value={data?.downloads ?? 0} />
           <Stat icon={Eye} label="Visualizações (30d)" value={data?.views ?? 0} />
-          <Stat icon={Megaphone} label="Comunicados ativos" value={data?.announcements ?? 0} />
         </div>
       )}
 
