@@ -4,8 +4,13 @@
 # pelo botao "Run workflow" na aba Actions do GitHub.
 #
 # Segredos necessarios (Settings > Secrets and variables > Actions no GitHub):
-#   - CLOUDFLARE_API_TOKEN   -> token com permissao "Edit Cloudflare Workers",
-#                               "D1 Edit" e "Workers R2 Storage Edit"
+#   - CLOUDFLARE_API_TOKEN   -> token com permissao "Edit Cloudflare Workers"
+#                               MAIS "Account > D1 > Edit", exigida pelo passo
+#                               que aplica as migrations.
+#                               Permissao de R2 NAO e necessaria: publicar um
+#                               Worker com bucket associado nao mexe no conteudo
+#                               do bucket. Quem le e grava arquivos e o app
+#                               rodando, pelo binding — nao o token do deploy.
 #   - CLOUDFLARE_ACCOUNT_ID  -> ID da sua conta Cloudflare
 #
 # O SESSION_SECRET nao entra aqui: ele fica guardado no proprio Worker
