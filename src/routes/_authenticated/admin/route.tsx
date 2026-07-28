@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect } from "@tanstack/react-router";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   ssr: false,

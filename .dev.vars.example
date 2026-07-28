@@ -1,0 +1,21 @@
+# Modelo de segredos para rodar na sua máquina.
+#
+# Copie este arquivo para ".dev.vars" e preencha. O ".dev.vars" com o valor real
+# NUNCA vai para o GitHub (está no .gitignore).
+#
+# O ".dev.vars" é lido pelo `npm run dev:cloudflare` (wrangler). Em produção
+# este segredo NÃO fica em arquivo nenhum: é guardado no próprio Worker com
+#     npx wrangler secret put SESSION_SECRET
+#
+# O banco (D1) e os arquivos (R2) não entram aqui: eles são configurados no
+# wrangler.jsonc, e o wrangler cria cópias locais deles sozinho.
+
+# Chave usada para assinar o "crachá" de quem está logado. É ela que impede
+# alguém de editar o próprio cookie e virar administrador.
+#
+# Gere uma aleatória e longa (não invente à mão). No terminal:
+#     node -e "console.log(crypto.randomUUID()+crypto.randomUUID())"
+#
+# Trocar este valor derruba todo mundo da plataforma (os crachás antigos deixam
+# de valer) — o que é justamente o que se faz se ele vazar.
+SESSION_SECRET=cole-aqui-uma-chave-longa-e-aleatoria

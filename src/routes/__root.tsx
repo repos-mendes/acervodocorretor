@@ -11,7 +11,7 @@ import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { Toaster } from "@/components/ui/sonner";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { ThemeProvider, themeInitScript } from "@/lib/theme";
 
 function NotFoundComponent() {

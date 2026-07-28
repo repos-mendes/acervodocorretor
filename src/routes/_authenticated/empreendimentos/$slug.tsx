@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo, useState } from "react";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { SignedImage } from "@/components/acervo/SignedImage";
 import { CommercialBadge } from "@/components/acervo/StatusBadge";
 import { FileTypeIcon } from "@/components/acervo/FileTypeIcon";

@@ -2,26 +2,42 @@
 
 Plataforma interna para corretores acessarem materiais comerciais dos empreendimentos da construtora. Interface em pt-BR com dois perfis: **Corretor** e **Administrador**.
 
-**Stack:** TanStack Start (React 19 + Vite) · Tailwind v4 · shadcn/ui · deploy em Cloudflare Workers.
+**Stack:** TanStack Start (React 19 + Vite) · Tailwind v4 · shadcn/ui · **tudo na Cloudflare**: Workers (site) + D1 (banco) + R2 (arquivos).
 
 ---
 
-## Estado atual (atualizado em 2026-07-23)
+## Estado atual (atualizado em 2026-07-28)
 
-O app está **no ar**, publicado no **Cloudflare Workers**, com **CI/CD automático**:
-todo envio (push) para a branch `main` no GitHub republica o site sozinho.
+O app está **no ar** no Cloudflare Workers, com **CI/CD automático**: todo envio
+(push) para a branch `main` no GitHub roda os testes, atualiza o banco e
+republica o site sozinho.
 
 - **Repositório:** https://github.com/repos-mendes/acervodocorretor
-- **Hospedagem:** Cloudflare Workers (nome do Worker: `acervo-do-corretor`)
-- **Link público:** `https://acervo-do-corretor.<subdomínio>.workers.dev`
-  _(preencher com a URL exata que apareceu no Cloudflare)_
-- **CI/CD:** GitHub Actions — arquivo `.github/workflows/deploy.yml`.
-  Segredos já configurados no GitHub: `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`.
+- **Hospedagem:** Cloudflare Workers (Worker `acervo-do-corretor`)
+- **Link público:** https://acervo-do-corretor.leadrouter.workers.dev
+- **CI/CD:** GitHub Actions — `.github/workflows/deploy.yml`.
+  Segredos no GitHub: `CLOUDFLARE_API_TOKEN` e `CLOUDFLARE_ACCOUNT_ID`.
 
-**Backend hoje = mock 100% local.** Não há banco de verdade ainda: cada aparelho
-vê os **próprios dados** (partindo do mesmo exemplo pré-carregado) e nada é
-compartilhado entre pessoas. Serve para mostrar a interface e testar em qualquer
-lugar/celular; **não** serve para dados reais ou sigilosos.
+### Infraestrutura (provisionada em 28/07)
+
+| Recurso | Nome | Observação |
+|---|---|---|
+| Banco | D1 `acervo` | id no `wrangler.jsonc`; migrations aplicadas |
+| Arquivos | R2 `acervo-arquivos` | privado; o R2 precisou ser habilitado no painel |
+| Segredo | `SESSION_SECRET` | no Worker; o `.dev.vars` local tem um **diferente** |
+
+Conferido no ar: as páginas carregam, o portão de arquivos devolve 401 sem
+login, e caminhos maliciosos são recusados com 400.
+
+### O que ainda falta
+
+1. **Criar o administrador**: abrir o site — a tela de login mostra "Primeiro
+   acesso" enquanto não existir nenhum admin. (Ainda não feito: o banco tem 0
+   pessoas.)
+2. **Cadastrar os corretores** (nome, telefone, PIN) pelo painel.
+3. **Subir capas, galerias e materiais** — SQL não sobe arquivo.
+4. Completar dos 7 empreendimentos: situação comercial (todos entraram como
+   "lançamento"), endereço, descrição longa e galeria.
 
 ---
 
@@ -29,109 +45,197 @@ lugar/celular; **não** serve para dados reais ou sigilosos.
 
 ```bash
 npm install
-npm run dev        # http://localhost:3000
+npm run dev:cloudflare    # http://localhost:8787
 ```
 
-### Contas de teste (modo local)
+**Use `dev:cloudflare`, não `dev`.** O `npm run dev` (vite puro) não enxerga o
+banco nem os arquivos — eles só existem dentro da Cloudflare. O
+`dev:cloudflare` monta o site e sobe o `wrangler dev`, que **simula D1 e R2 na
+sua máquina**, offline e sem custo, com dados separados dos de produção.
 
-| Perfil | E-mail | Senha |
-|---|---|---|
-| Administrador | `admin@acervo.local` | `admin123` |
-| Corretor | `corretor@acervo.local` | `corretor123` |
+Para criar o banco local na primeira vez:
+
+```bash
+npx wrangler d1 migrations apply acervo --local
+```
+
+### 🚧 Problema conhecido na máquina do Lucas (28/07)
+
+O `wrangler dev` **não sobe** neste Windows: o runtime da Cloudflare (workerd)
+morre com "access violation" antes de abrir a porta. A própria mensagem aponta a
+causa provável — **Microsoft Visual C++ Redistributable desatualizado**:
+https://learn.microsoft.com/pt-br/cpp/windows/latest-supported-vc-redist
+
+O que **funciona** nessa máquina: `npm install`, `npm run test`,
+`npm run build:cloudflare` e o `npx wrangler` para comandos que não sobem
+servidor (`d1 create`, `d1 migrations apply --remote`, `r2 bucket create`,
+`secret put`). O CI no GitHub (Linux) não é afetado por nada disso.
+
+**Enquanto não resolver:** testar publicando (o push na `main` republica em ~2
+min) ou pedir à TI a atualização do redistributable.
+
+> Nota histórica: o `CLAUDE.md` antigo dizia que "a política de grupo bloqueia
+> `npm run`". Isso era impreciso — o que a política bloqueava era o executável
+> `cross-env`, usado só para definir uma variável de ambiente no build. Ele foi
+> **removido** em 28/07 (o preset agora está no `vite.config.ts`), então os
+> comandos do projeto rodam normalmente. Esse bloqueio e o do workerd são
+> problemas diferentes.
 
 ---
 
-## Como os dados funcionam (modo local, sem backend)
+## Como entrar na plataforma
 
-Para testar o front-end sem depender de serviços externos, **todos os dados vivem no navegador**:
+**Não existe sistema de autenticação, e isso é uma decisão, não uma pendência.**
 
-- **Tabelas** (usuários, empreendimentos, arquivos, scripts, etc.): `localStorage`, chave `acervo.localdb.v5`. Na primeira execução um seed cria as contas de teste, os 7 empreendimentos da construtora e materiais de demonstração. A versão da chave está em `DB_KEY` (`src/lib/localdb/client.ts`); incrementá-la recria o banco de cada navegador a partir do seed.
-- **Sessão de login:** `localStorage`, chave `acervo.session.v1`.
-- **Arquivos enviados** (capas, galerias, materiais, avatares): `IndexedDB` (banco `acervo-blobs`), porque o `localStorage` tem limite de ~5MB.
+| Perfil | Como entra |
+|---|---|
+| **Corretor** | PIN de 4 números. O padrão são os 4 últimos dígitos do telefone, mas o admin pode escolher outro no cadastro. |
+| **Administrador** | E-mail e senha, pelo link "Sou administrador" na tela de login. |
 
-Implementação em `src/lib/localdb/`:
+- **Bloqueio após 3 erros**, por 15 minutos, contado **por endereço de origem**
+  (o PIN vem sem nome de usuário, então não há como contar por pessoa). É o que
+  impede um programa de varrer as 10.000 combinações. Constantes em
+  `src/lib/db/login.ts`.
+- O PIN fica **em texto** no banco de propósito: é um pedaço do telefone que o
+  admin já conhece, e guardá-lo cifrado só impediria o admin de reenviá-lo a
+  quem esqueceu. Quem protege o acesso é o bloqueio acima.
+- A **senha do admin é diferente**: vai cifrada (PBKDF2) e nunca sai do
+  servidor. **Não há recuperação por e-mail** — se perder, só mexendo no banco.
+
+---
+
+## Como os dados funcionam
+
+### Banco: Cloudflare D1 (SQLite)
+
+O schema vive em `migrations/`, aplicado com `wrangler d1 migrations apply`:
+
+| Arquivo | Conteúdo |
+|---|---|
+| `0001_init.sql` | As 9 tabelas, com as regras do banco (PIN único, papéis válidos, etc.) |
+| `0002_seed.sql` | As 5 categorias de arquivo, os 7 empreendimentos e os 12 scripts |
+
+Diferenças do Postgres que valem lembrar ao escrever SQL aqui: **sem ENUM**
+(virou `TEXT` + `CHECK`), **sem array** (JSON em `TEXT`), **sem booleano**
+(0/1). A conversão para o que as telas esperam acontece em
+`src/lib/db/schema.ts`.
+
+### Arquivos: Cloudflare R2
+
+Bucket **privado**: nenhum arquivo tem endereço público. Tudo passa por
+`/arquivos/<pasta>/<caminho>`, atendido por `src/lib/db/arquivos.ts`, que
+confere a sessão antes de entregar. As pastas são `covers`, `galleries`,
+`materials` e `avatars`.
+
+Foi o R2 que resolveu o problema de custo: **download não é cobrado**, e o
+piloto (10 corretores, ~800 MB) cabe folgado na camada gratuita de 10 GB.
+
+### Como as telas falam com o banco
+
+```
+tela  →  src/lib/db/client.ts   (db.from("x").select("*").eq(...))
+      →  src/lib/db/server.ts   (ponte com o framework)
+      →  src/lib/db/query.ts    (monta o SQL, aplica as regras)
+      →  D1
+```
+
+A interface `db.from(...)` foi mantida da versão anterior de propósito, para que
+a migração não exigisse reescrever as 19 telas.
 
 | Arquivo | Papel |
 |---|---|
-| `client.ts` | Cliente `db` com a interface de consulta usada pelas telas (`from().select().eq()…`, `auth.*`, `rpc()`), storage local e eventos de sessão |
-| `seed.ts` | Dados de demonstração |
-| `types.ts` | Modelo de dados (tipos das tabelas e enums) |
-| `blobs.ts` | Armazenamento de arquivos em IndexedDB |
-
-**Resetar os dados:** no console do navegador, `localStorage.clear()` + apagar o IndexedDB `acervo-blobs` (DevTools → Application), ou chame `resetLocalDb()` exportado de `src/lib/localdb/client.ts`. Ao recarregar, o seed é recriado.
-
-> Atenção: neste modo as senhas ficam em texto plano no navegador. É um modo de demonstração.
+| `access.ts` | **Quem pode ver e escrever o quê.** Leia antes de mexer |
+| `query.ts` | Motor: pedido → SQL. Não depende do framework (por isso é testável) |
+| `server.ts` / `auth.ts` | Ponte com o TanStack Start (sessão, requisição, erros) |
+| `client.ts` | O que as telas importam |
+| `login.ts` / `password.ts` | Conferência de PIN e senha, bloqueio por tentativas |
+| `session.ts` | O "crachá" assinado de quem está logado (cookie) |
+| `arquivos.ts` | O portão do R2 |
+| `schema.ts` | Lista de tabelas/colunas + conversões |
+| `bindings.ts` | Acesso ao D1 e ao R2 |
 
 ---
 
-## Deploy no Cloudflare Workers
+## ⚠️ Segurança: leia antes de mexer em `access.ts`
 
-O build já está configurado (Nitro preset `cloudflare-module` + `wrangler.jsonc`):
+No Supabase as regras de quem-vê-o-quê moravam **dentro do banco** (RLS): mesmo
+um erro no app não deixava um corretor ver o que não devia. **O D1 não tem esse
+recurso.** As regras passaram a ser código nosso, em `src/lib/db/access.ts`.
+Afrouxar uma linha ali afrouxa o app inteiro.
+
+Por isso existe `tests/acesso.test.ts`, que roda o motor real contra um SQLite
+real e confere cada porta. **Se você mudar `access.ts` e um teste falhar, o
+teste provavelmente está certo.**
+
+---
+
+## Testes
 
 ```bash
-npx wrangler login         # primeira vez
-npm run deploy             # build + wrangler deploy
+npm run test
 ```
 
-Para testar o build do Worker localmente: `npm run build:cloudflare && npx wrangler dev`.
+Quatro suítes, ~119 verificações, sem precisar de servidor nem de internet
+(usam `node:sqlite` e um R2 de mentira):
 
-Enquanto o app estiver no modo local, o deploy funciona normalmente — cada visitante terá seu próprio "banco" no navegador (útil para demonstrações).
+| Suíte | O que garante |
+|---|---|
+| `tests/schema.test.ts` | As migrations aplicam, o seed não duplica, as regras do banco pegam |
+| `tests/acesso.test.ts` | O corretor não vê rascunho, não lê o colega, não escreve o que não deve |
+| `tests/login.test.ts` | PIN, bloqueio em 3 erros, senha do admin cifrada |
+| `tests/arquivos.test.ts` | O portão do R2: sessão, permissões, caminhos maliciosos |
 
-### Notas técnicas úteis
+O CI roda tudo antes de publicar: teste vermelho não vira deploy.
 
-- Build do Cloudflare: `npm run build:cloudflare` (usa `cross-env`, funciona em Windows e Linux). Saída em `.output/` (server + public).
-- Config de deploy: `wrangler.jsonc` (aponta `main` e o binding de `assets`).
-- `.env` e `.claude/` estão no `.gitignore` (nunca vão para o GitHub).
-- Observação do ambiente local: a máquina Windows atual bloqueia alguns comandos por política de grupo (ex.: `npm run` direto). O build no CI (Linux) não é afetado. Se esbarrar nesse bloqueio ao rodar localmente, é preciso liberar com a TI ou usar um contorno.
+**O que os testes NÃO cobrem:** o app rodando de verdade. Eles usam bancos de
+mentira, então a primeira execução real ainda pode esbarrar em coisas como o
+cookie de sessão viajando ou o upload de um PDF grande. Clique no app inteiro
+antes de confiar — e veja o problema conhecido do `wrangler dev` acima.
+
+O que **já foi conferido de verdade** (28/07): o build para a Cloudflare passa, e
+os bindings `DB` (D1) e `FILES` (R2) chegam na configuração que o Nitro gera em
+`.output/server/wrangler.json` — era o principal risco técnico da migração.
+
+---
+
+## Deploy
+
+Automático a cada push na `main`. Manual:
+
+```bash
+npx wrangler login    # primeira vez
+npm run deploy
+```
+
+O `wrangler.jsonc` aponta o Worker, o banco D1 (`DB`) e o bucket R2 (`FILES`).
+O `database_id` é público — pode ficar no GitHub. O `SESSION_SECRET`, não.
 
 ### Gerenciador de pacotes: npm (padronizado)
 
 O projeto usa **npm** em todos os lugares (local e CI). O único lockfile é
-`package-lock.json`, e o CI (`.github/workflows/deploy.yml`) depende dele via
-`npm ci`. **Não** adicionar `bun.lock`, `bunfig.toml` ou `yarn.lock` — misturar
-gerenciadores faz os locks desencontrarem (versões diferentes no PC e no servidor).
+`package-lock.json`, e o CI depende dele via `npm ci`. **Não** adicionar
+`bun.lock`, `bunfig.toml` ou `yarn.lock` — misturar gerenciadores faz os locks
+desencontrarem (versões diferentes no PC e no servidor).
 
-> ⚠️ **Nota para o Claude (assistente):** se em algum momento o projeto mudar de
-> forma que o **bun** passe a ser tecnicamente melhor para este caso (ex.: tempo
-> de build/instalação virar gargalo real, ou surgir necessidade da proteção de
-> supply-chain `minimumReleaseAge` que o bun tem e o npm não), **avise o Lucas** —
-> ele quer ser consultado antes de qualquer migração para bun. O bun é mais rápido
-> na instalação, mas hoje a **consistência** (um só gerenciador) foi escolhida por
-> ser mais segura e simples. Trocar exige alinhar CI + docs + lockfile juntos.
+> ⚠️ **Nota para o Claude (assistente):** se em algum momento o **bun** passar a
+> ser tecnicamente melhor para este caso (ex.: tempo de build/instalação virar
+> gargalo real, ou surgir necessidade da proteção de supply-chain
+> `minimumReleaseAge`), **avise o Lucas** — ele quer ser consultado antes de
+> qualquer migração. Trocar exige alinhar CI + docs + lockfile juntos.
 
 ---
 
-## Próxima fase: backend real com Supabase
+## Histórico das decisões de backend
 
-O código do Supabase **já está no projeto, porém desativado** (por isso esses
-arquivos não devem ser apagados, mesmo sem uso hoje):
+Vale registrar para ninguém reabrir discussão encerrada:
 
-- `src/integrations/supabase/*` — cliente e middleware de autenticação.
-- `supabase/migrations/*` — as migrations com o **schema completo** do banco (tabelas, tipos, regras de acesso/RLS). As 3 primeiras vieram do projeto original; `20260727153000_scripts_buckets_e_catalogo.sql` alinha o schema ao app de hoje (cria a tabela `scripts`, remove `announcements`, cria os buckets de Storage, unifica as categorias de arquivo nas 5 do app) e já insere os 7 empreendimentos com seus scripts.
-- Dependência `@supabase/supabase-js` já instalada.
-
-O acesso a dados está concentrado em `src/lib/localdb/client.ts` e o de arquivos
-em `src/lib/storage.ts` — as telas não conhecem o backend. Como o mock foi feito
-imitando o Supabase, a migração é mais **repontar** do que reescrever.
-
-### Passos para ativar o Supabase
-
-1. **Criar o projeto no Supabase** (supabase.com) e pegar 3 chaves em Project Settings > API: URL, publishable/anon key e service_role key.
-2. **Aplicar as migrations** que já estão em `supabase/migrations/` no projeto novo, na ordem dos nomes. Ao final o banco já vem com os 7 empreendimentos e os scripts cadastrados — **sem** capas e materiais, que precisam ser enviados pelo painel do admin (SQL não sobe arquivo).
-3. **Criar o primeiro administrador**: cadastre-se pelo app e, no SQL Editor do Supabase, troque o papel para admin (`update public.user_roles set role = 'admin' where user_id = '<seu id>'`). O gatilho de cadastro cria todo mundo como `corretor`.
-4. **Ativar o Supabase no código** (trabalho de programação):
-   - **20 arquivos** ainda importam o mock (`@/lib/localdb/client`) — repontar para o cliente Supabase.
-   - Migrar o armazenamento de arquivos (`src/lib/storage.ts`) para o Supabase Storage.
-   - Regerar `src/integrations/supabase/types.ts` a partir do banco novo: o arquivo atual ainda descreve `announcements` e não conhece `scripts`.
-5. **Adicionar as variáveis no CI/CD** (`.github/workflows/deploy.yml`) e como secrets no GitHub / no Worker do Cloudflare:
-   - `VITE_SUPABASE_URL`, `VITE_SUPABASE_PUBLISHABLE_KEY` (públicas, no build)
-   - `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY` (runtime do servidor)
-   - `SUPABASE_SERVICE_ROLE_KEY` (🔒 **segredo**, só no Worker, nunca no navegador)
-6. **Testar** login/dados/upload reais e publicar.
-
-### Decisão tomada: Supabase
-
-Em **2026-07-27** o backend real foi definido: **Supabase**. A alternativa
-considerada (tudo em Cloudflare — D1 + R2 + auth, do zero) foi descartada
-porque o código do Supabase já existe no projeto e encurta muito o caminho.
-Não reabrir essa discussão sem um motivo novo.
+- **Supabase (27/07)** — escolhido porque o código de autenticação dele já
+  estava pronto no projeto.
+- **Revertido (28/07)** — o Lucas definiu que o login seria um **PIN de 4
+  dígitos, sem sistema de autenticação**. Isso derrubou o único motivo do
+  Supabase: sem o login dele, o RLS não servia e o PIN teria que ser escrito de
+  qualquer forma. Ficariam dois fornecedores e a cota de 5 GB de download/mês.
+- **Cloudflare D1 + R2 (28/07, atual)** — uma conta só, custo zero, download
+  ilimitado. Todo o código do Supabase foi removido nesta data.
+- **Google Drive** — descartado antes disso. Vídeo como link externo continua
+  **adiado**: não implementar sem pedido.

@@ -4,11 +4,12 @@
 # pelo botao "Run workflow" na aba Actions do GitHub.
 #
 # Segredos necessarios (Settings > Secrets and variables > Actions no GitHub):
-#   - CLOUDFLARE_API_TOKEN   -> token com permissao "Edit Cloudflare Workers"
+#   - CLOUDFLARE_API_TOKEN   -> token com permissao "Edit Cloudflare Workers",
+#                               "D1 Edit" e "Workers R2 Storage Edit"
 #   - CLOUDFLARE_ACCOUNT_ID  -> ID da sua conta Cloudflare
 #
-# Quando o Supabase for ativado, basta adicionar aqui as variaveis
-# VITE_SUPABASE_URL e VITE_SUPABASE_PUBLISHABLE_KEY no passo de build.
+# O SESSION_SECRET nao entra aqui: ele fica guardado no proprio Worker
+# (npx wrangler secret put SESSION_SECRET) e o deploy nao precisa conhece-lo.
 
 name: Deploy para Cloudflare
 
@@ -38,8 +39,23 @@ jobs:
       - name: Instalar dependencias
         run: npm ci
 
+      # Confere as regras de acesso, o login e a entrega de arquivos antes de
+      # publicar. Se algo aqui falhar, o deploy nao acontece.
+      - name: Rodar os testes
+        run: npm run test
+
       - name: Build para o Cloudflare
         run: npm run build:cloudflare
+
+      # Aplica ao banco de producao as migrations novas de migrations/*.sql.
+      # E' seguro repetir: o wrangler anota quais ja foram aplicadas e pula.
+      # Roda antes do deploy para o site novo nunca encontrar um banco velho.
+      - name: Atualizar o banco (D1)
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          command: d1 migrations apply acervo --remote
 
       - name: Publicar no Cloudflare Workers
         uses: cloudflare/wrangler-action@v3

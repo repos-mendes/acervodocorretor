@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DevelopmentCard } from "@/components/acervo/DevelopmentCard";

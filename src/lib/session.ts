@@ -1,11 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/lib/localdb/client";
-import type { Database } from "@/lib/localdb/types";
+import { db } from "@/lib/db/client";
+import type { Database } from "@/lib/db/types";
 
 export type Profile = Database["public"]["Tables"]["profiles"]["Row"];
 
 export type SessionData = {
   userId: string;
+  /** Contato do usuário. Com o login por PIN, o corretor pode não ter e-mail. */
   email: string;
   profile: Profile | null;
   isAdmin: boolean;
@@ -16,20 +17,20 @@ async function fetchSession(): Promise<SessionData | null> {
   const { data: { user } } = await db.auth.getUser();
   if (!user) return null;
 
-  const [{ data: profile }, { data: roles }] = await Promise.all([
-    db.from("profiles").select("*").eq("id", user.id).maybeSingle(),
-    db.from("user_roles").select("role").eq("user_id", user.id),
-  ]);
-
-  const isAdmin = (roles ?? []).some((r) => r.role === "admin");
-  const isActive = profile?.status === "ativo";
+  const { data: profile } = await db
+    .from("profiles")
+    .select("*")
+    .eq("id", user.id)
+    .maybeSingle();
 
   return {
     userId: user.id,
-    email: user.email ?? "",
+    email: profile?.email ?? "",
     profile,
-    isAdmin,
-    isActive,
+    // O papel vem da sessão assinada pelo servidor, não de uma consulta que a
+    // tela poderia contornar.
+    isAdmin: user.role === "admin",
+    isActive: profile?.status === "ativo",
   };
 }
 

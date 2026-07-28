@@ -1,7 +1,13 @@
-// Modelo de dados da aplicação.
-// Mantém o formato Database["public"]["Tables"|"Enums"] para que os tipos
-// usados nas telas continuem válidos independentemente do backend (localStorage
-// hoje, Cloudflare D1 no futuro).
+// Modelo de dados da aplicação: o formato das linhas que as telas recebem.
+//
+// O formato Database["public"]["Tables"|"Enums"] foi mantido de propósito ao
+// longo das trocas de backend (Supabase → banco local → Cloudflare D1), para
+// que as telas nunca precisassem ser reescritas junto.
+//
+// Atenção: isto descreve o que as telas veem, e não exatamente as colunas do
+// banco. O SQLite guarda booleano como 0/1 e array como texto JSON; a conversão
+// acontece em src/lib/db/schema.ts. Colunas marcadas como secretas lá (a senha
+// do admin) não aparecem aqui porque nunca chegam ao navegador.
 
 export type CommercialStatus =
   | "lancamento"
@@ -19,11 +25,18 @@ export type UserStatus = "ativo" | "inativo";
 export type ProfileRow = {
   id: string;
   full_name: string;
-  email: string;
+  /** Opcional: com o login por PIN, o corretor pode não ter e-mail cadastrado. */
+  email: string | null;
   phone: string | null;
   creci: string | null;
   avatar_url: string | null;
   status: UserStatus;
+  /**
+   * Os 4 dígitos com que o corretor entra. `null` para quem entra por senha
+   * (o administrador). A senha do admin NÃO aparece aqui de propósito: o
+   * servidor nunca a envia para o navegador.
+   */
+  pin: string | null;
   created_at: string;
   updated_at: string;
   last_access_at: string | null;
@@ -147,11 +160,3 @@ export type Database = {
 };
 
 export type TableName = keyof Database["public"]["Tables"];
-
-/** Usuário de autenticação local (somente para o modo de testes em localStorage). */
-export type LocalUser = {
-  id: string;
-  email: string;
-  password: string;
-  created_at: string;
-};
