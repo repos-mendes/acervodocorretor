@@ -10,7 +10,23 @@
 // PBKDF2 é usado por ser o único algoritmo desse tipo disponível no WebCrypto
 // dos Workers da Cloudflare (não há bcrypt/argon2 sem instalar biblioteca).
 
-const ITERACOES = 210_000; // recomendação atual do OWASP para PBKDF2-SHA256
+/**
+ * Repetições do cálculo. Quanto mais, mais lento fica adivinhar a senha.
+ *
+ * O runtime da Cloudflare (workerd) **recusa mais de 100.000** — pedir 210.000,
+ * como estava aqui antes, fazia o cadastro do administrador falhar em produção
+ * com "iteration counts above 100000 are not supported". Este é o teto, então
+ * é o valor usado.
+ *
+ * Fica abaixo do que o OWASP recomenda hoje para PBKDF2-SHA256. O que compensa
+ * a diferença neste caso: a senha do admin tem no mínimo 10 caracteres, é de
+ * uma pessoa só, e as tentativas de login são bloqueadas após 3 erros
+ * (src/lib/db/login.ts) — o ataque prático seria ter o banco em mãos, não
+ * chutar pela tela.
+ */
+export const ITERACOES = 100_000;
+/** Limite do workerd. Existe para o teste travar se alguém aumentar ITERACOES. */
+export const MAX_ITERACOES_CLOUDFLARE = 100_000;
 const TAMANHO_SAL = 16;
 const TAMANHO_CHAVE = 32;
 

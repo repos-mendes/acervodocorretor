@@ -15,7 +15,12 @@ import {
   existeAdmin,
   minutosDeBloqueio,
 } from "@/lib/db/login";
-import { hashSenha, conferirSenha } from "@/lib/db/password";
+import {
+  hashSenha,
+  conferirSenha,
+  ITERACOES,
+  MAX_ITERACOES_CLOUDFLARE,
+} from "@/lib/db/password";
 import { checa, criarBanco, encerrar, titulo } from "./apoio";
 
 const { sqlite, DB } = criarBanco(process.argv[2]);
@@ -185,7 +190,20 @@ const guardado = (
   >
 ).password_hash;
 checa("nao contem a senha digitada", !guardado.includes("senha-bem-longa"));
-checa("usa PBKDF2 com sal", guardado.startsWith("pbkdf2$210000$"), guardado.slice(0, 24) + "...");
+checa(
+  "usa PBKDF2 com sal",
+  guardado.startsWith(`pbkdf2$${ITERACOES}$`),
+  guardado.slice(0, 24) + "...",
+);
+// Este teste roda no Node, que aceita qualquer numero de repeticoes — mas a
+// producao roda no workerd, que recusa acima de 100.000. Sem esta verificacao,
+// aumentar ITERACOES passa aqui e quebra o cadastro do admin no ar (foi o que
+// aconteceu em 28/07 com 210.000).
+checa(
+  `repeticoes dentro do limite do workerd (${MAX_ITERACOES_CLOUDFLARE})`,
+  ITERACOES <= MAX_ITERACOES_CLOUDFLARE,
+  String(ITERACOES),
+);
 checa("confere a senha certa", await conferirSenha("senha-bem-longa", guardado));
 checa("recusa a senha errada", !(await conferirSenha("senha-bem-long", guardado)));
 const outroHash = await hashSenha("senha-bem-longa");
