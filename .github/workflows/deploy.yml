@@ -33,7 +33,10 @@ jobs:
       - name: Configurar Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          # Node 24, e nao 22, porque os testes usam o "node:sqlite" embutido —
+          # que no Node 22 ainda exige a flag --experimental-sqlite. E' tambem a
+          # versao da maquina do Lucas, entao CI e local rodam igual.
+          node-version: 24
           cache: npm
 
       - name: Instalar dependencias
