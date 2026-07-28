@@ -1,6 +1,6 @@
 import JSZip from "jszip";
-import { db } from "@/lib/localdb/client";
-import { getSignedUrl } from "@/lib/storage";
+import { db } from "@/lib/db/client";
+import { getDownloadUrl, getSignedUrl } from "@/lib/storage";
 
 export type DownloadableFile = {
   id: string;
@@ -32,8 +32,10 @@ export function safeFileName(name: string) {
 }
 
 export async function downloadFile(file: DownloadableFile, developmentId: string) {
-  const url = await getSignedUrl("materials", file.storage_path, 60);
-  if (!url) throw new Error("Não foi possível gerar o link do arquivo.");
+  if (!file.storage_path) throw new Error("Não foi possível gerar o link do arquivo.");
+  // O servidor devolve o arquivo já com o nome original ("salvar como"), em vez
+  // de depender só do atributo `download` do navegador.
+  const url = getDownloadUrl("materials", file.storage_path, file.original_file_name);
   await recordDownload(file.id, developmentId);
   triggerBrowserDownload(url, file.original_file_name);
 }

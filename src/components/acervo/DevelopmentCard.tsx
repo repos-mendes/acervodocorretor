@@ -13,7 +13,7 @@ import {
   Loader2,
   ArrowUpRight,
 } from "lucide-react";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { SignedImage } from "@/components/acervo/SignedImage";
 import { CommercialBadge } from "@/components/acervo/StatusBadge";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";

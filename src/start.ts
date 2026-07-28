@@ -1,6 +1,16 @@
 import { createStart, createMiddleware } from "@tanstack/react-start";
+import { getRequest } from "@tanstack/react-start/server";
 
+import { tratarArquivo } from "./lib/db/arquivos";
 import { renderErrorPage } from "./lib/error-page";
+
+// Os arquivos do acervo (capas, materiais, avatares) ficam num bucket privado
+// do R2 e são entregues por este atalho, que confere a sessão antes. Precisa
+// vir antes do roteamento normal: /arquivos/... não é uma página do site.
+const arquivosMiddleware = createMiddleware().server(async ({ next }) => {
+  const resposta = await tratarArquivo(getRequest());
+  return resposta ?? next();
+});
 
 const errorMiddleware = createMiddleware().server(async ({ next }) => {
   try {
@@ -18,5 +28,5 @@ const errorMiddleware = createMiddleware().server(async ({ next }) => {
 });
 
 export const startInstance = createStart(() => ({
-  requestMiddleware: [errorMiddleware],
+  requestMiddleware: [errorMiddleware, arquivosMiddleware],
 }));

@@ -16,16 +16,16 @@ dist-ssr
 .nitro
 *.local
 
-# Variáveis de ambiente / segredos — NUNCA enviar para o GitHub.
-# As chaves do Supabase/Clerk vão aqui no futuro; devem ficar só na sua máquina
-# e nos "secrets" do Cloudflare.
+# Segredos — NUNCA enviar para o GitHub.
+# Devem ficar só na sua máquina (.dev.vars) e no Worker
+# (npx wrangler secret put NOME).
 .env
 .env.*
-!.env.example
 
 # Wrangler / Cloudflare
 .wrangler/
 .dev.vars
+!.dev.vars.example
 
 # Editor directories and files
 .vscode/*

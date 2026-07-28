@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Users, Download, Eye, FileText } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";

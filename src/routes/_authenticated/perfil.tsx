@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useEffect } from "react";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { useSession } from "@/lib/session";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -26,7 +26,6 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
-  const [newPw, setNewPw] = useState("");
 
   useEffect(() => {
     if (session?.profile) {
@@ -61,14 +60,6 @@ function ProfilePage() {
     setUploading(false);
     toast.success("Foto atualizada.");
     qc.invalidateQueries({ queryKey: ["session"] });
-  }
-
-  async function changePassword() {
-    if (newPw.length < 6) return toast.error("Mínimo 6 caracteres.");
-    const { error } = await db.auth.updateUser({ password: newPw });
-    if (error) return toast.error(error.message);
-    toast.success("Senha atualizada.");
-    setNewPw("");
   }
 
   if (!session) return null;
@@ -121,16 +112,22 @@ function ProfilePage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle className="font-display">Alterar senha</CardTitle>
-          <CardDescription>Defina uma nova senha para o seu acesso.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex flex-col gap-3 sm:flex-row">
-          <Input type="password" placeholder="Nova senha" value={newPw} onChange={(e) => setNewPw(e.target.value)} />
-          <Button variant="outline" onClick={changePassword}>Atualizar senha</Button>
-        </CardContent>
-      </Card>
+      {session.profile?.pin && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="font-display">Seu acesso</CardTitle>
+            <CardDescription>É com estes 4 números que você entra na plataforma.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-wrap items-center gap-4">
+            <code className="rounded-lg bg-secondary px-4 py-2 font-mono text-2xl tracking-[0.4em]">
+              {session.profile.pin}
+            </code>
+            <p className="text-sm text-muted-foreground">
+              Para trocar seu PIN, fale com o administrador.
+            </p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

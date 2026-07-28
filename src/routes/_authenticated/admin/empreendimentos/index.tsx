@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -16,7 +16,7 @@ import { Plus, Edit, Trash2, FolderOpen } from "lucide-react";
 import { toast } from "sonner";
 import { SignedImage } from "@/components/acervo/SignedImage";
 import { uploadFile } from "@/lib/storage";
-import type { Database } from "@/lib/localdb/types";
+import type { Database } from "@/lib/db/types";
 
 type Development = Database["public"]["Tables"]["developments"]["Row"];
 

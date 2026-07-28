@@ -1,4 +1,4 @@
-import type { Database } from "@/lib/localdb/types";
+import type { Database } from "@/lib/db/types";
 
 export type CommercialStatus = Database["public"]["Enums"]["commercial_status"];
 export type PublicationStatus = Database["public"]["Enums"]["publication_status"];

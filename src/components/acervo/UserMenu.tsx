@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { initials, roleLabel } from "@/lib/format";
 import type { SessionData } from "@/lib/session";
 import { useEffect, useState } from "react";

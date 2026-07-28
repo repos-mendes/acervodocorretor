@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, Link, useNavigate } from "@tanstack/react-router";
-import { db } from "@/lib/localdb/client";
+import { db } from "@/lib/db/client";
 import { SidebarProvider, SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/acervo/AppSidebar";
 import { UserMenu } from "@/components/acervo/UserMenu";
@@ -23,13 +23,13 @@ function AuthenticatedLayout() {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Desativado enquanto estava logado: encerra a sessão. A tela de login
+    // explica o motivo quando a pessoa tentar entrar de novo.
     if (session && !session.isActive) {
-      db.auth.signOut().then(() => navigate({ to: "/auth", search: { inactive: "1" } as never }));
+      db.auth.signOut().then(() => navigate({ to: "/auth" }));
     }
-    if (session) {
-      // update last_access_at (fire and forget)
-      db.from("profiles").update({ last_access_at: new Date().toISOString() }).eq("id", session.userId);
-    }
+    // O último acesso passou a ser registrado no servidor, na hora do login:
+    // o corretor não tem permissão para escrever nessa coluna.
   }, [session, navigate]);
 
   if (isLoading || !session) {

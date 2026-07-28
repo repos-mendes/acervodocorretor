@@ -11,6 +11,28 @@
     "directory": ".output/public",
     "binding": "ASSETS"
   },
+
+  // Banco de dados (D1). O `database_id` sai de `npx wrangler d1 create acervo`
+  // e é público — não é segredo, pode ficar no GitHub.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "acervo",
+      "database_id": "f0899289-956c-4bfa-8f34-17b0033012be"
+    }
+  ],
+
+  // Arquivos (R2): capas, galerias, materiais e avatares.
+  // Bucket privado: nada é servido direto do R2 — tudo passa pelo Worker, que
+  // confere a sessão antes de entregar. Criar com:
+  //   npx wrangler r2 bucket create acervo-arquivos
+  "r2_buckets": [
+    {
+      "binding": "FILES",
+      "bucket_name": "acervo-arquivos"
+    }
+  ],
+
   "observability": {
     "enabled": true
   }
