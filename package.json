@@ -13,11 +13,7 @@
     "typecheck": "node node_modules/typescript/bin/tsc --noEmit",
     "lint": "node node_modules/eslint/bin/eslint.js .",
     "format": "node node_modules/prettier/bin/prettier.cjs --write .",
-    "test": "npm run test:schema && npm run test:acesso && npm run test:login && npm run test:arquivos",
-    "test:schema": "node node_modules/esbuild/bin/esbuild tests/schema.test.ts --bundle --platform=node --format=esm --alias:@=./src --packages=external --outfile=node_modules/.tmp/schema.mjs && node node_modules/.tmp/schema.mjs",
-    "test:acesso": "node node_modules/esbuild/bin/esbuild tests/acesso.test.ts --bundle --platform=node --format=esm --alias:@=./src --packages=external --outfile=node_modules/.tmp/acesso.mjs && node node_modules/.tmp/acesso.mjs",
-    "test:login": "node node_modules/esbuild/bin/esbuild tests/login.test.ts --bundle --platform=node --format=esm --alias:@=./src --packages=external --outfile=node_modules/.tmp/login.mjs && node node_modules/.tmp/login.mjs",
-    "test:arquivos": "node node_modules/esbuild/bin/esbuild tests/arquivos.test.ts --bundle --platform=node --format=esm --alias:@=./src --packages=external --outfile=node_modules/.tmp/arquivos.mjs && node node_modules/.tmp/arquivos.mjs"
+    "test": "node tests/run.mjs"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
