@@ -13,6 +13,8 @@ O app está **no ar** no Cloudflare Workers, com **CI/CD automático**: todo env
 republica o site sozinho.
 
 - **Repositório:** https://github.com/repos-mendes/acervodocorretor
+  (voltou a ser **privado** em 28/07 — a API do GitHub responde 404 sem token,
+  então quem quiser ver o resultado do CI precisa abrir a aba "Actions")
 - **Hospedagem:** Cloudflare Workers (Worker `acervo-do-corretor`)
 - **Link público:** https://acervo-do-corretor.leadrouter.workers.dev
 - **CI/CD:** GitHub Actions — `.github/workflows/deploy.yml`.
@@ -29,15 +31,40 @@ republica o site sozinho.
 Conferido no ar: as páginas carregam, o portão de arquivos devolve 401 sem
 login, e caminhos maliciosos são recusados com 400.
 
-### O que ainda falta
+### Quem já está cadastrado (conferido no banco de produção em 28/07, fim do dia)
 
-1. **Criar o administrador**: abrir o site — a tela de login mostra "Primeiro
-   acesso" enquanto não existir nenhum admin. (Ainda não feito: o banco tem 0
-   pessoas.)
-2. **Cadastrar os corretores** (nome, telefone, PIN) pelo painel.
-3. **Subir capas, galerias e materiais** — SQL não sobe arquivo.
-4. Completar dos 7 empreendimentos: situação comercial (todos entraram como
-   "lançamento"), endereço, descrição longa e galeria.
+- **1 administrador**, ativo. A tela de "Primeiro acesso" **não aparece mais**.
+- **3 corretores**, ativos e com PIN.
+- 7 empreendimentos, 12 scripts, 5 categorias de arquivo (vindos do seed).
+
+Para conferir isso de novo sem abrir o site (funciona na máquina do Lucas):
+
+```bash
+node node_modules/wrangler/bin/wrangler.js d1 execute acervo --remote \
+  --config wrangler.jsonc --json \
+  --command "select r.role, count(*) from user_roles r group by r.role"
+```
+
+Use `node node_modules/wrangler/bin/wrangler.js`, **não** `npx wrangler` — o
+atalho do `npx` é bloqueado pela política de grupo desta máquina.
+
+### O que ainda falta: só conteúdo, nada de código
+
+Os 7 empreendimentos estão **publicados mas vazios**. Conferido no banco em
+28/07: nenhum tem capa, descrição longa, endereço ou galeria; todos seguem como
+"lançamento"; e há **0 arquivos** no sistema inteiro. Na prática, um corretor
+que entrar hoje vê 7 cards sem foto e sem nada para baixar.
+
+Tudo isso é trabalho de painel — subir arquivo e preencher campo — com os
+materiais reais da construtora. SQL não sobe arquivo.
+
+1. **Capas, galerias e materiais** de cada empreendimento.
+2. **Situação comercial** de cada um (hoje todos como "lançamento"), endereço e
+   descrição longa.
+
+Estratégia combinada com o Lucas: fazer **um empreendimento primeiro**
+(capa + descrição + 2 ou 3 materiais), conferir na tela do corretor se ficou
+como ele imaginou, e só então repetir nos outros seis.
 
 ---
 
