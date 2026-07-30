@@ -16,9 +16,10 @@ import {
 import { db } from "@/lib/db/client";
 import { SignedImage } from "@/components/acervo/SignedImage";
 import { CommercialBadge } from "@/components/acervo/StatusBadge";
+import { FileTypeIcon } from "@/components/acervo/FileTypeIcon";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Skeleton } from "@/components/ui/skeleton";
-import { downloadGroup } from "@/lib/downloads";
+import { downloadFile, downloadGroup } from "@/lib/downloads";
 import { formatBytes } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { CommercialStatus } from "@/lib/format";
@@ -42,6 +43,7 @@ type CardFile = {
   storage_path: string;
   original_file_name: string;
   file_size: number | null;
+  file_extension: string | null;
 };
 
 type Group = { id: string; name: string; files: CardFile[] };
@@ -85,7 +87,9 @@ export function DevelopmentCard({ development }: { development: CardDevelopment 
     queryFn: async () => {
       const { data } = await db
         .from("development_files")
-        .select("id, title, category_id, storage_path, original_file_name, file_size")
+        .select(
+          "id, title, category_id, storage_path, original_file_name, file_size, file_extension",
+        )
         .eq("development_id", development.id)
         .eq("publication_status", "published")
         .order("is_featured", { ascending: false })
@@ -196,6 +200,11 @@ export function DevelopmentCard({ development }: { development: CardDevelopment 
   );
 }
 
+/**
+ * Uma categoria dentro do menu do card. Abre um segundo nível listando os
+ * arquivos um a um (o corretor escolhe *qual* planta quer), e mantém à direita
+ * o atalho que baixa a categoria inteira de uma vez.
+ */
 function CategoryRow({
   group,
   developmentId,
@@ -205,6 +214,7 @@ function CategoryRow({
   developmentId: string;
   developmentName: string;
 }) {
+  const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const Icon = categoryIcon(group.name);
   const count = group.files.length;
@@ -215,7 +225,7 @@ function CategoryRow({
     ? "Nenhum arquivo"
     : `${count} ${count === 1 ? "arquivo" : "arquivos"}${totalSize > 0 ? ` · ${formatBytes(totalSize)}` : ""}`;
 
-  async function handleDownload() {
+  async function handleDownloadAll() {
     if (empty || busy) return;
     setBusy(true);
     try {
@@ -233,29 +243,119 @@ function CategoryRow({
   }
 
   return (
+    <Collapsible
+      open={open && !empty}
+      onOpenChange={setOpen}
+      className={cn(
+        "overflow-hidden rounded-lg border bg-background transition-colors",
+        empty ? "opacity-50" : "hover:border-accent/40",
+      )}
+    >
+      <div className="flex items-stretch">
+        <CollapsibleTrigger
+          disabled={empty}
+          aria-label={
+            empty ? `${group.name} — nenhum arquivo disponível` : `Ver arquivos de ${group.name}`
+          }
+          className={cn(
+            "flex min-w-0 flex-1 items-center gap-3 px-3 py-2 text-left transition-colors",
+            empty ? "cursor-not-allowed" : "hover:bg-secondary/60",
+          )}
+        >
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
+            <Icon className="h-4 w-4" />
+          </span>
+          <span className="min-w-0 flex-1">
+            <span className="block truncate text-sm font-medium">{group.name}</span>
+            <span className="block text-[11px] text-muted-foreground">{detail}</span>
+          </span>
+          {!empty && (
+            <ChevronDown
+              className={cn(
+                "h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-200",
+                open && "rotate-180",
+              )}
+            />
+          )}
+        </CollapsibleTrigger>
+
+        <button
+          type="button"
+          onClick={handleDownloadAll}
+          disabled={empty || busy}
+          title={count > 1 ? `Baixar os ${count} arquivos em ZIP` : "Baixar"}
+          aria-label={count > 1 ? `Baixar todos de ${group.name} em ZIP` : `Baixar ${group.name}`}
+          className={cn(
+            "flex w-11 shrink-0 items-center justify-center border-l transition-colors",
+            empty ? "cursor-not-allowed" : "hover:bg-secondary/60",
+          )}
+        >
+          {busy ? (
+            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          ) : (
+            <Download
+              className={cn("h-4 w-4", empty ? "text-muted-foreground" : "text-accent")}
+            />
+          )}
+        </button>
+      </div>
+
+      <CollapsibleContent className="overflow-hidden data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down">
+        <ul className="divide-y border-t bg-secondary/20">
+          {group.files.map((f) => (
+            <li key={f.id}>
+              <FileRow file={f} developmentId={developmentId} />
+            </li>
+          ))}
+        </ul>
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+/** Um arquivo do segundo nível: clicar baixa só ele. */
+function FileRow({ file, developmentId }: { file: CardFile; developmentId: string }) {
+  const [busy, setBusy] = useState(false);
+
+  async function handleDownload() {
+    if (busy) return;
+    setBusy(true);
+    try {
+      await downloadFile(file, developmentId);
+      toast.success("Download iniciado.");
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Falha ao baixar o arquivo.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
     <button
       type="button"
       onClick={handleDownload}
-      disabled={empty || busy}
-      aria-label={empty ? `${group.name} — nenhum arquivo disponível` : `Baixar ${group.name}`}
-      className={cn(
-        "flex w-full items-center gap-3 rounded-lg border bg-background px-3 py-2 text-left transition-colors",
-        empty ? "cursor-not-allowed opacity-50" : "hover:border-accent/40 hover:bg-secondary/60",
-      )}
+      disabled={busy}
+      aria-label={`Baixar ${file.title}`}
+      className="flex w-full items-center gap-2.5 py-2 pl-6 pr-3 text-left transition-colors hover:bg-secondary/60"
     >
-      <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-secondary text-muted-foreground">
-        <Icon className="h-4 w-4" />
-      </span>
+      <FileTypeIcon
+        extension={file.file_extension}
+        fileName={file.original_file_name}
+        className="h-8 w-8"
+      />
       <span className="min-w-0 flex-1">
-        <span className="block truncate text-sm font-medium">{group.name}</span>
-        <span className="block text-[11px] text-muted-foreground">{detail}</span>
+        <span className="block truncate text-sm">{file.title}</span>
+        <span className="block text-[11px] text-muted-foreground">
+          {(file.file_extension || file.original_file_name.match(/\.([^.]+)$/)?.[1] || "arquivo")
+            .replace(/^\./, "")
+            .toUpperCase()}
+          {file.file_size ? ` · ${formatBytes(file.file_size)}` : ""}
+        </span>
       </span>
       {busy ? (
         <Loader2 className="h-4 w-4 shrink-0 animate-spin text-muted-foreground" />
       ) : (
-        <Download
-          className={cn("h-4 w-4 shrink-0", empty ? "text-muted-foreground" : "text-accent")}
-        />
+        <Download className="h-4 w-4 shrink-0 text-muted-foreground" />
       )}
     </button>
   );
