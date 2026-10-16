@@ -87,7 +87,7 @@ O bucket R2 é privado. Todo arquivo passa por `/arquivos/<pasta>/<caminho>`, qu
 Na troca de backend, a API de consulta das telas (`db.from("x").select().eq()`) foi mantida e reimplementada sobre o D1 (`client.ts → server.ts → query.ts`). As 19 telas migraram sem reescrita.
 
 ### 6. Pipeline que não publica quebrado
-O CI roda os testes, aplica as migrations no D1 remoto e só depois publica o Worker. As ferramentas são chamadas via `node node_modules/...` em vez dos atalhos `.cmd`, que a política de grupo da máquina de desenvolvimento bloqueia.
+O CI roda os testes, aplica as migrations no D1 remoto e só depois publica o Worker. As ferramentas são chamadas via `node node_modules/...` em vez dos atalhos `.cmd`, que a política de grupo da máquina de desenvolvimento bloqueia.(Desenvolvi no notebook do trabalho)
 
 ### 7. npm como único gerenciador
 Um lockfile só (`package-lock.json`), usado por `npm ci` no CI. Misturar bun ou yarn dessincroniza as versões entre o PC e o servidor.
