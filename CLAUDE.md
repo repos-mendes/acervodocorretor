@@ -66,6 +66,26 @@ Estratégia combinada com o Lucas: fazer **um empreendimento primeiro**
 (capa + descrição + 2 ou 3 materiais), conferir na tela do corretor se ficou
 como ele imaginou, e só então repetir nos outros seis.
 
+### Próximo passo de código: sistema de login com banco em D1 (definido em 2026-10-16)
+
+O Lucas definiu como próximo passo **fazer um sistema de login, com o banco em
+D1**. Isso reabre a decisão registrada em "Como entrar na plataforma" (PIN de 4
+dígitos, sem sistema de autenticação).
+
+Antes de codar, alinhar com o Lucas o que muda em relação ao que já existe:
+
+- O app **já usa D1** (banco `acervo`), e as tabelas `profiles`, `user_roles` e
+  `login_attempts` já guardam usuários, papéis e bloqueio por tentativas. O
+  novo login deve partir desse schema, com migration nova, não de um banco
+  separado.
+- Confirmar como o **corretor** passa a entrar (e-mail/usuário e senha no lugar
+  do PIN? convite? recuperação de senha?) e o que acontece com os PINs dos
+  corretores já cadastrados.
+- Manter o que já funciona: senha cifrada com PBKDF2 (teto de 100.000
+  repetições no runtime), sessão em cookie assinado, regras em `access.ts` e os
+  testes de `tests/login.test.ts` e `tests/acesso.test.ts`, que precisam ser
+  atualizados junto.
+
 ---
 
 ## Rodando localmente
@@ -113,6 +133,9 @@ min) ou pedir à TI a atualização do redistributable.
 ## Como entrar na plataforma
 
 **Não existe sistema de autenticação, e isso é uma decisão, não uma pendência.**
+
+> Em 2026-10-16 isso passou a ser o próximo passo: ver "Próximo passo de código"
+> em "Estado atual". O que está descrito abaixo é o funcionamento de hoje.
 
 | Perfil | Como entra |
 |---|---|
